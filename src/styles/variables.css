@@ -1,0 +1,100 @@
+/* ============================================
+   컬러 팔레트 디자인 시스템 — Wild Souls 기반
+   출처: 컬러 팔레트 디자인 시스템.md
+   디자인 컨셉: 따뜻한 보헤미안 자연주의
+   ============================================ */
+
+:root {
+  /* Primary Colors — 번트 오렌지 계열 */
+  --color-primary:       #E05C2A;
+  --color-primary-light: #EA8255;
+  --color-primary-dark:  #B84620;
+
+  /* Secondary Colors — 골든 옐로우 계열 */
+  --color-secondary:       #F2C038;
+  --color-secondary-light: #F7D46A;
+  --color-secondary-dark:  #C99A1E;
+
+  /* Accent Colors — 포인트 컬러 */
+  --color-accent-pink:   #E8899A;
+  --color-accent-blue:   #A8CCE0;
+  --color-accent-teal:   #5A9A88;
+  --color-accent-purple: #C4A8CE;
+  --color-accent-olive:  #CDCF78;
+
+  /* Background Colors */
+  --color-bg-primary:    #FFFFFF;
+  --color-bg-secondary:  #F9F5EE;
+  --color-bg-terracotta: #C04538;
+  --color-bg-hero:       #E05C2A;
+
+  /* Text Colors */
+  --color-text-primary:   #1A1A1A;
+  --color-text-secondary: #2D2D2D;
+  --color-text-muted:     #5A5A5A;
+  --color-text-on-dark:   #FFFFFF;
+  --color-text-on-color:  #1A1A1A;
+
+  /* Border / Outline */
+  --color-border-strong: #1A1A1A;
+  --color-border-light:  #D4D4D4;
+  --color-border-warm:   #E0C090;
+
+  /* Interactive — 버튼 & 링크 */
+  --color-button-primary:        #1A1A1A;
+  --color-button-primary-text:   #FFFFFF;
+  --color-button-hover:          #E05C2A;
+  --color-button-secondary:      transparent;
+  --color-button-secondary-border: #1A1A1A;
+  --color-link:                  #E05C2A;
+  --color-link-hover:            #B84620;
+
+  /* State Colors */
+  --color-focus:   #E05C2A;
+  --color-success: #5A9A88;
+  --color-error:   #C04538;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 64px;
+  --spacing-3xl: 96px;
+}
+
+/* 다크모드 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary:    #1C1410;
+    --color-bg-secondary:  #2A1E14;
+    --color-primary:       #EA8255;
+    --color-primary-light: #F0A070;
+    --color-primary-dark:  #E05C2A;
+    --color-secondary:     #C99A1E;
+    --color-text-primary:  #F5F0EA;
+    --color-text-secondary: #D4C8BC;
+    --color-text-muted:    #8A8078;
+    --color-border-light:  #3A3028;
+    --color-border-strong: #F5F0EA;
+  }
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  :root {
+    --color-bg-hero: #F9F5EE;
+  }
+  .decorative-blob { display: none; }
+}
+
+/* 고대비 모드 */
+@media (forced-colors: active) {
+  :root {
+    --color-button-primary:      ButtonText;
+    --color-button-primary-text: ButtonFace;
+    --color-link:                LinkText;
+    --color-focus:               Highlight;
+  }
+}
