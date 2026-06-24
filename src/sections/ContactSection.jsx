@@ -2,14 +2,18 @@ import { useState, useEffect } from 'react';
 import {
   Box, Typography, Container, TextField, Button,
   IconButton, CircularProgress, Snackbar, Alert, Tooltip,
+  Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EmailIcon from '@mui/icons-material/Email';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import { supabase } from '../lib/supabase';
 
 const EMOJI_OPTIONS = ['👋', '😊', '🔥', '💪', '✨', '🚀', '🌟', '💡'];
+const ADMIN_PASSWORD = 'hami2026';
 
 const SNS_LINKS = [
   { icon: <GitHubIcon />, label: 'GitHub', href: 'https://github.com/computerbusan-bit' },
@@ -19,60 +23,148 @@ const SNS_LINKS = [
 
 const INITIAL_FORM = { name: '', message: '', email: '', organization: '', emoji: '👋' };
 
-function GuestbookEntry({ entry }) {
+// 삭제 비밀번호 다이얼로그
+function DeleteDialog({ open, onClose, onConfirm }) {
+  const [pw, setPw] = useState('');
+  const [error, setError] = useState(false);
+
+  const handleConfirm = () => {
+    if (pw === ADMIN_PASSWORD) {
+      setPw(''); setError(false);
+      onConfirm();
+    } else {
+      setError(true);
+    }
+  };
+
+  const handleClose = () => {
+    setPw(''); setError(false);
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, pb: 1 }}>
+        <LockRoundedIcon sx={{ color: 'var(--color-primary)', fontSize: 20 }} />
+        관리자 확인
+      </DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          방명록을 삭제하려면 관리자 비밀번호를 입력하세요.
+        </Typography>
+        <TextField
+          label="비밀번호"
+          type="password"
+          value={pw}
+          onChange={e => { setPw(e.target.value); setError(false); }}
+          onKeyDown={e => e.key === 'Enter' && handleConfirm()}
+          fullWidth
+          size="small"
+          autoFocus
+          error={error}
+          helperText={error ? '비밀번호가 올바르지 않습니다.' : ''}
+        />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+        <Button onClick={handleClose} sx={{ color: 'text.secondary' }}>취소</Button>
+        <Button
+          onClick={handleConfirm}
+          variant="contained"
+          color="error"
+          disabled={!pw}
+        >
+          삭제
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+function GuestbookEntry({ entry, onDelete }) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
   const date = new Date(entry.created_at).toLocaleDateString('ko-KR', {
     year: 'numeric', month: 'short', day: 'numeric',
   });
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: 2,
-        p: { xs: 2, sm: 2.5 },
-        borderRadius: '12px',
-        bgcolor: 'rgba(255,255,255,0.1)',
-        border: '1px solid rgba(255,255,255,0.15)',
-        transition: 'background 0.2s',
-        '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
-      }}
-    >
-      {/* 이모지 */}
+    <>
       <Box
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         sx={{
-          width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-          bgcolor: 'rgba(242,192,56,0.2)', border: '2px solid rgba(242,192,56,0.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.3rem',
+          display: 'flex',
+          gap: 2,
+          p: { xs: 2, sm: 2.5 },
+          borderRadius: '12px',
+          bgcolor: 'rgba(255,255,255,0.1)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          transition: 'background 0.2s',
+          '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
+          position: 'relative',
         }}
       >
-        {entry.emoji}
-      </Box>
-
-      <Box flex={1} minWidth={0}>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'baseline', mb: 0.5 }}>
-          <Typography fontWeight={700} sx={{ color: '#fff', fontSize: '0.95rem' }}>
-            {entry.name}
-          </Typography>
-          {entry.organization && (
-            <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.78rem' }}>
-              {entry.organization}
-            </Typography>
-          )}
-          <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', ml: 'auto' }}>
-            {date}
-          </Typography>
-        </Box>
-        <Typography
+        {/* 이모지 */}
+        <Box
           sx={{
-            color: 'rgba(255,255,255,0.85)', fontSize: { xs: '0.88rem', sm: '0.92rem' },
-            lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+            bgcolor: 'rgba(242,192,56,0.2)', border: '2px solid rgba(242,192,56,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.3rem',
           }}
         >
-          {entry.message}
-        </Typography>
+          {entry.emoji}
+        </Box>
+
+        <Box flex={1} minWidth={0}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'baseline', mb: 0.5, pr: 4 }}>
+            <Typography fontWeight={700} sx={{ color: '#fff', fontSize: '0.95rem' }}>
+              {entry.name}
+            </Typography>
+            {entry.organization && (
+              <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.78rem' }}>
+                {entry.organization}
+              </Typography>
+            )}
+            <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', ml: 'auto' }}>
+              {date}
+            </Typography>
+          </Box>
+          <Typography
+            sx={{
+              color: 'rgba(255,255,255,0.85)', fontSize: { xs: '0.88rem', sm: '0.92rem' },
+              lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            }}
+          >
+            {entry.message}
+          </Typography>
+        </Box>
+
+        {/* 삭제 버튼 */}
+        <Tooltip title="삭제" placement="top">
+          <IconButton
+            size="small"
+            onClick={() => setDialogOpen(true)}
+            sx={{
+              position: 'absolute', top: 8, right: 8,
+              color: 'rgba(255,255,255,0.35)',
+              opacity: hovered ? 1 : 0,
+              transition: 'opacity 0.2s, color 0.2s',
+              '&:hover': { color: '#ff6b6b', bgcolor: 'rgba(255,107,107,0.12)' },
+            }}
+          >
+            <DeleteOutlineRoundedIcon sx={{ fontSize: 17 }} />
+          </IconButton>
+        </Tooltip>
       </Box>
-    </Box>
+
+      <DeleteDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onConfirm={() => { setDialogOpen(false); onDelete(entry.id); }}
+      />
+    </>
   );
 }
 
@@ -94,6 +186,16 @@ export default function ContactSection() {
       .limit(20);
     setEntries(data || []);
     setLoading(false);
+  };
+
+  const handleDelete = async (id) => {
+    const { error } = await supabase.from('guestbook').delete().eq('id', id);
+    if (error) {
+      setSnackbar({ open: true, message: '삭제에 실패했습니다.', severity: 'error' });
+    } else {
+      setSnackbar({ open: true, message: '방명록이 삭제됐습니다.', severity: 'info' });
+      setEntries(prev => prev.filter(e => e.id !== id));
+    }
   };
 
   const handleChange = (e) => {
@@ -151,20 +253,13 @@ export default function ContactSection() {
         </Box>
 
         {/* ── 연락처 카드 영역 ── */}
-        <Box
-          sx={{
-            display: 'flex', flexDirection: { xs: 'column', sm: 'row' },
-            gap: 3, mb: { xs: 6, md: 8 },
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3, mb: { xs: 6, md: 8 } }}>
           {/* 이메일 카드 */}
-          <Box
-            sx={{
-              flex: 1, p: { xs: 2.5, sm: 3 }, borderRadius: '16px',
-              bgcolor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)',
-              display: 'flex', alignItems: 'center', gap: 2,
-            }}
-          >
+          <Box sx={{
+            flex: 1, p: { xs: 2.5, sm: 3 }, borderRadius: '16px',
+            bgcolor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)',
+            display: 'flex', alignItems: 'center', gap: 2,
+          }}>
             <Box sx={{
               width: 48, height: 48, borderRadius: '12px', flexShrink: 0,
               bgcolor: 'rgba(242,192,56,0.2)', border: '1px solid rgba(242,192,56,0.4)',
@@ -183,13 +278,11 @@ export default function ContactSection() {
           </Box>
 
           {/* SNS 카드 */}
-          <Box
-            sx={{
-              p: { xs: 2.5, sm: 3 }, borderRadius: '16px',
-              bgcolor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)',
-              display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5,
-            }}
-          >
+          <Box sx={{
+            p: { xs: 2.5, sm: 3 }, borderRadius: '16px',
+            bgcolor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5,
+          }}>
             <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em' }}>
               SOCIAL
             </Typography>
@@ -221,9 +314,7 @@ export default function ContactSection() {
         <Box>
           {/* 방명록 헤더 */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-            <Box sx={{
-              width: 4, height: 28, borderRadius: 2, bgcolor: '#F2C038', flexShrink: 0,
-            }} />
+            <Box sx={{ width: 4, height: 28, borderRadius: 2, bgcolor: '#F2C038', flexShrink: 0 }} />
             <Typography variant="h4" fontWeight={700} sx={{ color: '#fff', fontSize: { xs: '1.2rem', sm: '1.4rem' } }}>
               방명록
             </Typography>
@@ -254,19 +345,19 @@ export default function ContactSection() {
                 <CircularProgress sx={{ color: '#F2C038' }} size={32} />
               </Box>
             ) : entries.length === 0 ? (
-              <Box
-                sx={{
-                  textAlign: 'center', py: 6, borderRadius: '16px',
-                  bgcolor: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(255,255,255,0.2)',
-                }}
-              >
+              <Box sx={{
+                textAlign: 'center', py: 6, borderRadius: '16px',
+                bgcolor: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(255,255,255,0.2)',
+              }}>
                 <Typography sx={{ fontSize: '2rem', mb: 1 }}>✍️</Typography>
                 <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>
                   아직 방명록이 없어요. 첫 번째로 남겨보세요!
                 </Typography>
               </Box>
             ) : (
-              entries.map(entry => <GuestbookEntry key={entry.id} entry={entry} />)
+              entries.map(entry => (
+                <GuestbookEntry key={entry.id} entry={entry} onDelete={handleDelete} />
+              ))
             )}
           </Box>
 
@@ -274,11 +365,7 @@ export default function ContactSection() {
           <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{
-              p: { xs: 2.5, sm: 4 }, borderRadius: '20px',
-              bgcolor: '#fff',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-            }}
+            sx={{ p: { xs: 2.5, sm: 4 }, borderRadius: '20px', bgcolor: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}
           >
             <Typography variant="h6" fontWeight={700} sx={{ color: 'var(--color-text-primary)', mb: 3, fontSize: '1.05rem' }}>
               ✍️ 방명록 남기기
@@ -312,65 +399,33 @@ export default function ContactSection() {
 
             {/* 이름 + 소속 */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
-              <TextField
-                name="name"
-                label="이름 *"
-                value={form.name}
-                onChange={handleChange}
-                required
-                fullWidth
-                size="small"
-              />
-              <TextField
-                name="organization"
-                label="소속/직업 (선택)"
-                value={form.organization}
-                onChange={handleChange}
-                fullWidth
-                size="small"
-                placeholder="회사, 학교 등"
-              />
+              <TextField name="name" label="이름 *" value={form.name} onChange={handleChange} required fullWidth size="small" />
+              <TextField name="organization" label="소속/직업 (선택)" value={form.organization} onChange={handleChange} fullWidth size="small" placeholder="회사, 학교 등" />
             </Box>
 
             {/* 이메일 */}
             <TextField
-              name="email"
-              label="이메일 (선택, 비공개)"
-              value={form.email}
-              onChange={handleChange}
-              type="email"
-              fullWidth
-              size="small"
-              sx={{ mb: 2 }}
-              helperText="이메일은 공개되지 않습니다"
+              name="email" label="이메일 (선택, 비공개)" value={form.email}
+              onChange={handleChange} type="email" fullWidth size="small"
+              sx={{ mb: 2 }} helperText="이메일은 공개되지 않습니다"
             />
 
             {/* 메시지 */}
             <TextField
-              name="message"
-              label="메시지 *"
-              value={form.message}
-              onChange={handleChange}
-              required
-              fullWidth
-              multiline
-              rows={3}
-              sx={{ mb: 3 }}
+              name="message" label="메시지 *" value={form.message}
+              onChange={handleChange} required fullWidth multiline rows={3} sx={{ mb: 3 }}
               placeholder="안녕하세요! 방문 기념으로 한 마디 남겨주세요 😊"
               inputProps={{ maxLength: 500 }}
               helperText={`${form.message.length} / 500`}
             />
 
             <Button
-              type="submit"
-              variant="contained"
-              fullWidth
+              type="submit" variant="contained" fullWidth
               disabled={!form.name.trim() || !form.message.trim() || submitting}
               endIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SendRoundedIcon />}
               sx={{
                 py: 1.5, fontWeight: 700, fontSize: '0.95rem',
-                bgcolor: 'var(--color-bg-terracotta)',
-                color: '#fff',
+                bgcolor: 'var(--color-bg-terracotta)', color: '#fff',
                 '&:hover': { bgcolor: '#A83B2F' },
                 '&:disabled': { bgcolor: 'rgba(192,69,56,0.3)', color: 'rgba(255,255,255,0.5)' },
               }}
