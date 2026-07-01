@@ -9,9 +9,10 @@ import FolderOpenRoundedIcon from '@mui/icons-material/FolderOpenRounded';
 
 export function ProjectCard({ project }) {
   const [imgError, setImgError] = useState(false);
-  // detail_url 기준으로 실시간 썸네일 생성 (600×600 크롭)
-  const thumbnailUrl = project.detail_url
-    ? `https://image.thum.io/get/width/600/crop/600/${project.detail_url}`
+  // noCDN: 캐시 무시하고 실시간 캡처, trailing slash 보장
+  const siteUrl = project.detail_url?.replace(/\/?$/, '/');
+  const thumbnailUrl = siteUrl
+    ? `https://image.thum.io/get/noCDN/width/600/crop/600/${siteUrl}`
     : null;
 
   return (
