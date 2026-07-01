@@ -1,113 +1,113 @@
-import { Box, Typography, Container, Grid, Card, CardContent, Button } from '@mui/material';
-import FolderIcon from '@mui/icons-material/Folder';
+import { useState, useEffect } from 'react';
+import { Box, Typography, Container, Grid, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
-
-const PLACEHOLDER_PROJECTS = [
-  { title: 'Project 01', desc: '프로젝트 설명이 들어갈 예정입니다.', bg: 'var(--color-accent-pink)' },
-  { title: 'Project 02', desc: '프로젝트 설명이 들어갈 예정입니다.', bg: 'var(--color-accent-blue)' },
-  { title: 'Project 03', desc: '프로젝트 설명이 들어갈 예정입니다.', bg: 'var(--color-accent-teal)' },
-];
+import { supabase } from '../lib/supabase';
+import { ProjectCard, ProjectCardSkeleton } from '../components/ProjectCard';
 
 export default function ProjectsSection() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .limit(3);
+      setProjects(data || []);
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
   return (
     <Box
       component="section"
       sx={{ py: { xs: 8, md: 12 }, backgroundColor: 'var(--color-bg-primary)' }}
     >
-      <Container maxWidth="md">
-        {/* 헤더 */}
+      <Container maxWidth="lg">
+        {/* 섹션 헤더 */}
         <Box sx={{ textAlign: 'center', mb: 7 }}>
           <Box sx={{
             display: 'inline-block',
             px: 2, py: 0.5, mb: 2,
             backgroundColor: 'var(--color-accent-teal)',
             borderRadius: '20px',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            letterSpacing: '0.1em',
+            fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em',
             color: '#FFFFFF',
           }}>
-            PROJECTS SECTION
+            PROJECTS
           </Box>
-
           <Typography variant="h2" sx={{
             color: 'var(--color-text-primary)',
             fontWeight: 800,
             fontSize: { xs: '1.8rem', md: '2.25rem' },
             borderBottom: '3px solid var(--color-secondary)',
-            display: 'inline-block',
-            pb: 0.5,
+            display: 'inline-block', pb: 0.5,
+            lineHeight: 1.3,
           }}>
-            여기는 Projects 섹션입니다.
+            대표 프로젝트
           </Typography>
-
           <Typography variant="body1" sx={{
             color: 'var(--color-text-muted)', mt: 2,
           }}>
-            대표작 썸네일 3-4개와 '더 보기' 버튼이 들어갈 예정입니다.
+            직접 설계하고 구현한 프로젝트들을 소개합니다.
           </Typography>
         </Box>
 
-        {/* 카드 그리드 */}
+        {/* 카드 그리드 — 데스크톱 3열 / 태블릿 2열 / 모바일 1열 */}
         <Grid container spacing={3} sx={{ mb: 6 }}>
-          {PLACEHOLDER_PROJECTS.map(({ title, desc, bg }) => (
-            <Grid item xs={12} sm={4} key={title}>
-              <Card sx={{
-                height: '100%',
-                border: '1px solid var(--color-border-light)',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                },
+          {loading ? (
+            [0, 1, 2].map(i => (
+              <Grid item xs={12} sm={6} md={4} key={i}>
+                <ProjectCardSkeleton />
+              </Grid>
+            ))
+          ) : projects.length === 0 ? (
+            <Grid item xs={12}>
+              <Box sx={{
+                textAlign: 'center', py: 10,
+                color: 'var(--color-text-muted)',
               }}>
-                {/* 썸네일 플레이스홀더 */}
-                <Box sx={{
-                  height: 160,
-                  backgroundColor: bg,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <FolderIcon sx={{ fontSize: 56, color: '#FFFFFF', opacity: 0.8 }} />
-                </Box>
-                <CardContent>
-                  <Typography variant="h4" sx={{
-                    fontWeight: 700, mb: 1,
-                    color: 'var(--color-text-primary)',
-                    fontSize: '1rem',
-                  }}>
-                    {title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'var(--color-text-muted)' }}>
-                    {desc}
-                  </Typography>
-                </CardContent>
-              </Card>
+                <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>🗂️</Typography>
+                <Typography variant="body1">프로젝트를 준비 중입니다.</Typography>
+              </Box>
             </Grid>
-          ))}
+          ) : (
+            projects.map(project => (
+              <Grid item xs={12} sm={6} md={4} key={project.id}>
+                <ProjectCard project={project} />
+              </Grid>
+            ))
+          )}
         </Grid>
 
-        <Box sx={{ textAlign: 'center' }}>
-          <Button
-            component={Link}
-            to="/projects"
-            variant="outlined"
-            size="large"
-            sx={{
-              borderColor: 'var(--color-primary)',
-              color: 'var(--color-primary)',
-              borderWidth: '2px',
-              '&:hover': {
-                backgroundColor: 'var(--color-primary)',
-                color: '#FFFFFF',
+        {/* 더 보기 버튼 */}
+        {!loading && projects.length > 0 && (
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              component={Link}
+              to="/projects"
+              variant="outlined"
+              size="large"
+              sx={{
+                borderColor: 'var(--color-primary)',
+                color: 'var(--color-primary)',
                 borderWidth: '2px',
-              },
-            }}
-          >
-            전체 프로젝트 더 보기 →
-          </Button>
-        </Box>
+                px: 4,
+                '&:hover': {
+                  backgroundColor: 'var(--color-primary)',
+                  color: '#FFFFFF',
+                  borderWidth: '2px',
+                },
+              }}
+            >
+              전체 프로젝트 더 보기 →
+            </Button>
+          </Box>
+        )}
       </Container>
     </Box>
   );
