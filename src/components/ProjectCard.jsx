@@ -9,11 +9,10 @@ import FolderOpenRoundedIcon from '@mui/icons-material/FolderOpenRounded';
 
 export function ProjectCard({ project }) {
   const [imgError, setImgError] = useState(false);
-  // noCDN: 캐시 무시하고 실시간 캡처, trailing slash 보장
+  // DB에 thumbnail_url 있으면 우선 사용, 없으면 image.thum.io 자동 생성
   const siteUrl = project.detail_url?.replace(/\/?$/, '/');
-  const thumbnailUrl = siteUrl
-    ? `https://image.thum.io/get/noCDN/width/600/crop/600/${siteUrl}`
-    : null;
+  const thumbnailUrl = project.thumbnail_url
+    || (siteUrl ? `https://image.thum.io/get/noCDN/width/600/crop/600/${siteUrl}` : null);
 
   return (
     <Card sx={{
