@@ -7,12 +7,21 @@ import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import FolderOpenRoundedIcon from '@mui/icons-material/FolderOpenRounded';
 
+// id → 포트폴리오 public 폴더의 실제 스크린샷
+const STATIC_THUMBNAILS = {
+  1: `${import.meta.env.BASE_URL}thumbnails/crossfit.png`,
+  2: `${import.meta.env.BASE_URL}thumbnails/busan.png`,
+};
+
+// id → 올바른 Live Demo URL (DB 값이 잘못됐을 경우 대비)
+const LIVE_DEMO_URLS = {
+  2: 'https://computerbusan-bit.github.io/hami-first-website/',
+};
+
 export function ProjectCard({ project }) {
   const [imgError, setImgError] = useState(false);
-  // DB에 thumbnail_url 있으면 우선 사용, 없으면 image.thum.io 자동 생성
-  const siteUrl = project.detail_url?.replace(/\/?$/, '/');
-  const thumbnailUrl = project.thumbnail_url
-    || (siteUrl ? `https://image.thum.io/get/noCDN/width/600/crop/600/${siteUrl}` : null);
+  const thumbnailUrl = STATIC_THUMBNAILS[project.id] || project.thumbnail_url || null;
+  const demoUrl = LIVE_DEMO_URLS[project.id] || project.detail_url;
 
   return (
     <Card sx={{
@@ -118,7 +127,7 @@ export function ProjectCard({ project }) {
           {project.detail_url && (
             <Button
               component="a"
-              href={project.detail_url}
+              href={demoUrl}
               target="_blank"
               rel="noopener noreferrer"
               variant="contained"
