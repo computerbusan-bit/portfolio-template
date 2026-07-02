@@ -37,10 +37,10 @@ export function ProjectCard({ project }) {
         boxShadow: '0 16px 40px rgba(0,0,0,0.14)',
       },
     }}>
-      {/* 썸네일 — 1:1 비율 */}
+      {/* 썸네일 — 실제 스크린샷 비율(1280x800 = 8:5)에 맞춤 */}
       <Box sx={{
         position: 'relative',
-        paddingTop: '100%',
+        paddingTop: '62.5%',
         overflow: 'hidden',
         bgcolor: 'var(--color-bg-secondary)',
         flexShrink: 0,
@@ -135,8 +135,10 @@ export function ProjectCard({ project }) {
               endIcon={<OpenInNewRoundedIcon sx={{ fontSize: '0.8rem !important' }} />}
               sx={{
                 flex: 1,
+                minWidth: 0,
                 fontSize: '0.78rem',
                 py: 0.8,
+                whiteSpace: 'nowrap',
                 bgcolor: 'var(--color-primary)',
                 color: '#fff',
                 boxShadow: 'none',
@@ -161,8 +163,10 @@ export function ProjectCard({ project }) {
               startIcon={<GitHubIcon sx={{ fontSize: '0.85rem !important' }} />}
               sx={{
                 flex: 1,
+                minWidth: 0,
                 fontSize: '0.78rem',
                 py: 0.8,
+                whiteSpace: 'nowrap',
                 borderColor: 'var(--color-border-strong)',
                 color: 'var(--color-text-primary)',
                 borderWidth: '1.5px',
