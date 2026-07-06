@@ -50,7 +50,7 @@ export const skillsData = [
     level: 65,
     category: 'Design',
     description: 'UI/UX 디자인과 프로토타이핑을 해요.',
-    mainSkill: false,
+    mainSkill: true,
   },
   {
     id: 6,
@@ -59,7 +59,7 @@ export const skillsData = [
     level: 70,
     category: 'Design',
     description: '이미지 편집과 리터칭 작업을 해요.',
-    mainSkill: false,
+    mainSkill: true,
   },
   {
     id: 7,
