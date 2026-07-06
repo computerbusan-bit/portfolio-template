@@ -19,6 +19,7 @@ import {
   skillsData as initialSkillsData,
   availableSkills,
   skillCategories,
+  groupByCategory,
 } from '../data/skillsData';
 
 const ICONS = {
@@ -68,7 +69,7 @@ export default function AboutMeSkills() {
 
   const addedNames = new Set(skills.map((skill) => skill.name));
   const addableSkills = availableSkills.filter((skill) => !addedNames.has(skill.name));
-  const categories = [...new Set(skills.map((skill) => skill.category))];
+  const groupedSkills = groupByCategory(skills);
 
   const handleAddSkill = () => {
     const skillToAdd = addableSkills.find((skill) => skill.id === Number(selectedSkillId));
@@ -107,8 +108,7 @@ export default function AboutMeSkills() {
         )}
       </Box>
 
-      {categories.map((category) => {
-        const categorySkills = skills.filter((skill) => skill.category === category);
+      {groupedSkills.map(({ category, skills: categorySkills }) => {
         const color = skillCategories[category]?.color ?? 'var(--color-primary)';
 
         return (
