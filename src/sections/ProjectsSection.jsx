@@ -25,6 +25,7 @@ export default function ProjectsSection() {
   return (
     <Box
       component="section"
+      id="projects"
       sx={{ py: { xs: 8, md: 12 }, backgroundColor: 'var(--color-bg-primary)' }}
     >
       <Container maxWidth="lg">

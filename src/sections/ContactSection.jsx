@@ -4,22 +4,16 @@ import {
   IconButton, CircularProgress, Snackbar, Alert, Tooltip,
   Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
-import GitHubIcon from '@mui/icons-material/GitHub';
 import EmailIcon from '@mui/icons-material/Email';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import { supabase } from '../lib/supabase';
+import { socialLinks } from '../data/socialLinks';
+import { SOCIAL_ICONS } from '../utils/socialIcons';
 
 const EMOJI_OPTIONS = ['👋', '😊', '🔥', '💪', '✨', '🚀', '🌟', '💡'];
 const ADMIN_PASSWORD = 'hami2026';
-
-const SNS_LINKS = [
-  { icon: <GitHubIcon />, label: 'GitHub', href: 'https://github.com/computerbusan-bit' },
-  { icon: <LinkedInIcon />, label: 'LinkedIn', href: '#' },
-  { icon: <EmailIcon />, label: 'Email', href: 'mailto:computer.busan@gmail.com' },
-];
 
 const INITIAL_FORM = { name: '', message: '', email: '', organization: '', emoji: '👋' };
 
@@ -287,25 +281,29 @@ export default function ContactSection() {
               SOCIAL
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-              {SNS_LINKS.map(({ icon, label, href }) => (
-                <Tooltip key={label} title={label} placement="top">
-                  <IconButton
-                    component="a"
-                    href={href}
-                    target={href.startsWith('http') ? '_blank' : undefined}
-                    rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    sx={{
-                      color: '#fff', bgcolor: 'rgba(255,255,255,0.12)',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      width: 44, height: 44, borderRadius: '10px',
-                      '&:hover': { bgcolor: '#F2C038', color: '#1A1A1A', borderColor: '#F2C038' },
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {icon}
-                  </IconButton>
-                </Tooltip>
-              ))}
+              {socialLinks.map(({ id, icon, label, href }) => {
+                const Icon = SOCIAL_ICONS[icon];
+                return (
+                  <Tooltip key={id} title={label} placement="top">
+                    <IconButton
+                      component="a"
+                      href={href}
+                      target={href.startsWith('http') ? '_blank' : undefined}
+                      rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                      aria-label={label}
+                      sx={{
+                        color: '#fff', bgcolor: 'rgba(255,255,255,0.12)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        width: 44, height: 44, borderRadius: '10px',
+                        '&:hover': { bgcolor: '#F2C038', color: '#1A1A1A', borderColor: '#F2C038' },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Icon />
+                    </IconButton>
+                  </Tooltip>
+                );
+              })}
             </Box>
           </Box>
         </Box>

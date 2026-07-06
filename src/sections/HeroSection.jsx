@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Typography, Button, Container, Grid, Fade } from '@mui/material';
+import { Box, Typography, Button, IconButton, Container, Grid, Fade, Tooltip } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { SKILL_ICONS, DEFAULT_SKILL_ICON } from '../utils/skillIcons';
+import { socialLinks } from '../data/socialLinks';
+import { SOCIAL_ICONS } from '../utils/socialIcons';
 
 const HEADLINE = '안 되는 이유를 찾아내고,\n되는 방법을 만들어내는 개발자';
 const TYPE_SPEED = 55;
@@ -39,6 +40,10 @@ export default function HeroSection() {
 
   const typedHeadline = useTypewriter(HEADLINE, TYPE_SPEED);
   const isTyping = typedHeadline.length < HEADLINE.length;
+
+  const scrollToProjects = () => {
+    document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const scrollToContact = () => {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
@@ -175,48 +180,95 @@ export default function HeroSection() {
             </Fade>
 
             <Fade in timeout={600} style={{ transitionDelay: '1900ms' }}>
-              <Box sx={{
-                display: 'flex', gap: 2, flexWrap: 'wrap',
-                justifyContent: { xs: 'center', md: 'flex-start' },
-              }}>
-                <Button
-                  component={Link}
-                  to="/projects"
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    backgroundColor: 'var(--color-button-primary)',
-                    color: 'var(--color-button-primary-text)',
-                    transition: 'all 0.25s ease',
-                    '&:hover': {
-                      backgroundColor: 'var(--color-button-hover)',
-                      transform: 'translateY(-2px) scale(1.03)',
-                      boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
-                    },
-                  }}
-                >
-                  포트폴리오 보기
-                </Button>
-                <Button
-                  onClick={scrollToContact}
-                  variant="outlined"
-                  size="large"
-                  sx={{
-                    borderColor: '#FFFFFF',
-                    color: '#FFFFFF',
-                    borderWidth: '2px',
-                    transition: 'all 0.25s ease',
-                    '&:hover': {
-                      borderColor: 'var(--color-secondary)',
-                      color: 'var(--color-secondary)',
+              <Box>
+                <Box sx={{
+                  display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3,
+                  justifyContent: { xs: 'center', md: 'flex-start' },
+                }}>
+                  {/* 주요 CTA */}
+                  <Button
+                    onClick={scrollToProjects}
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      backgroundColor: 'var(--color-secondary)',
+                      color: 'var(--color-text-on-color)',
+                      fontWeight: 700,
+                      boxShadow: '0 0 0 rgba(242,192,56,0.6)',
+                      animation: 'ctaPulse 2.5s ease-in-out infinite',
+                      transition: 'all 0.25s ease',
+                      '@keyframes ctaPulse': {
+                        '0%, 100%': { boxShadow: '0 0 0 0 rgba(242,192,56,0.5)' },
+                        '50%': { boxShadow: '0 0 0 10px rgba(242,192,56,0)' },
+                      },
+                      '&:hover': {
+                        backgroundColor: 'var(--color-secondary-light)',
+                        transform: 'translateY(-2px) scale(1.04)',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                        animation: 'none',
+                      },
+                    }}
+                  >
+                    프로젝트 보기
+                  </Button>
+
+                  {/* 보조 CTA */}
+                  <Button
+                    onClick={scrollToContact}
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                      borderColor: 'rgba(255,255,255,0.7)',
+                      color: '#FFFFFF',
                       borderWidth: '2px',
-                      backgroundColor: 'rgba(255,255,255,0.08)',
-                      transform: 'translateY(-2px) scale(1.03)',
-                    },
-                  }}
-                >
-                  연락하기
-                </Button>
+                      transition: 'all 0.25s ease',
+                      '&:hover': {
+                        borderColor: 'var(--color-secondary)',
+                        color: 'var(--color-secondary)',
+                        borderWidth: '2px',
+                        backgroundColor: 'rgba(255,255,255,0.08)',
+                        transform: 'translateY(-2px)',
+                      },
+                    }}
+                  >
+                    연락하기
+                  </Button>
+                </Box>
+
+                {/* 소셜 링크 */}
+                <Box sx={{
+                  display: 'flex', gap: 1.5,
+                  justifyContent: { xs: 'center', md: 'flex-start' },
+                }}>
+                  {socialLinks.map(({ id, icon, label, href }) => {
+                    const Icon = SOCIAL_ICONS[icon];
+                    return (
+                      <Tooltip key={id} title={label} placement="top">
+                        <IconButton
+                          component="a"
+                          href={href}
+                          target={href.startsWith('http') ? '_blank' : undefined}
+                          rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                          aria-label={label}
+                          sx={{
+                            color: '#FFFFFF',
+                            backgroundColor: 'rgba(255,255,255,0.12)',
+                            border: '1px solid rgba(255,255,255,0.3)',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              backgroundColor: 'var(--color-secondary)',
+                              color: 'var(--color-text-on-color)',
+                              borderColor: 'var(--color-secondary)',
+                              transform: 'translateY(-3px)',
+                            },
+                          }}
+                        >
+                          <Icon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    );
+                  })}
+                </Box>
               </Box>
             </Fade>
           </Grid>
