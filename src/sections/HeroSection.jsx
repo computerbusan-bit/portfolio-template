@@ -1,7 +1,16 @@
+import { Link } from 'react-router-dom';
 import { Box, Typography, Button, Container } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { usePortfolio } from '../hooks/usePortfolio';
 
 export default function HeroSection() {
+  const { aboutMeData } = usePortfolio();
+  const { name, education, major, experience } = aboutMeData.basicInfo;
+
+  const scrollToContact = () => {
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <Box
       component="section"
@@ -40,7 +49,7 @@ export default function HeroSection() {
           letterSpacing: '0.1em',
           color: 'var(--color-text-on-color)',
         }}>
-          HERO SECTION
+          {name} · {experience}
         </Box>
 
         <Typography
@@ -50,10 +59,12 @@ export default function HeroSection() {
             mb: 3,
             fontSize: { xs: '2.2rem', sm: '3rem', md: '4rem' },
             fontWeight: 800,
-            lineHeight: 1.1,
+            lineHeight: 1.2,
           }}
         >
-          여기는 Hero 섹션입니다.
+          안 되는 이유를 찾아내고,
+          <br />
+          되는 방법을 만들어내는 개발자
         </Typography>
 
         <Typography
@@ -68,28 +79,40 @@ export default function HeroSection() {
             lineHeight: 1.8,
           }}
         >
-          메인 비주얼, 이름, 간단 소개가 들어갈 예정입니다.
+          {education}에서 {major}을 공부했고, 지금은 {experience}로 학생들과 함께 성장하고 있어요.
+          효율적이고 재사용 가능한 코드를 만드는 것을 목표로 합니다.
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Button variant="contained" size="large" sx={{
-            backgroundColor: 'var(--color-button-primary)',
-            color: 'var(--color-button-primary-text)',
-            '&:hover': { backgroundColor: 'var(--color-button-hover)' },
-          }}>
+          <Button
+            component={Link}
+            to="/projects"
+            variant="contained"
+            size="large"
+            sx={{
+              backgroundColor: 'var(--color-button-primary)',
+              color: 'var(--color-button-primary-text)',
+              '&:hover': { backgroundColor: 'var(--color-button-hover)' },
+            }}
+          >
             포트폴리오 보기
           </Button>
-          <Button variant="outlined" size="large" sx={{
-            borderColor: 'var(--color-text-on-color)',
-            color: 'var(--color-text-on-color)',
-            borderWidth: '2px',
-            '&:hover': {
-              borderColor: 'var(--color-secondary)',
-              color: 'var(--color-secondary)',
+          <Button
+            onClick={scrollToContact}
+            variant="outlined"
+            size="large"
+            sx={{
+              borderColor: 'var(--color-text-on-color)',
+              color: 'var(--color-text-on-color)',
               borderWidth: '2px',
-              backgroundColor: 'transparent',
-            },
-          }}>
+              '&:hover': {
+                borderColor: 'var(--color-secondary)',
+                color: 'var(--color-secondary)',
+                borderWidth: '2px',
+                backgroundColor: 'transparent',
+              },
+            }}
+          >
             연락하기
           </Button>
         </Box>
