@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Box, Typography, Button, IconButton, Container, Grid, Fade, Tooltip } from '@mui/material';
+import {
+  Box, Typography, Button, IconButton, Container, Grid, Fade, Tooltip, useMediaQuery,
+} from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { SKILL_ICONS, DEFAULT_SKILL_ICON } from '../utils/skillIcons';
@@ -33,10 +35,17 @@ const ORBIT_POSITIONS = [
   { bottom: '-6%', right: '10%' },
 ];
 
+// 요청된 브레이크포인트: 모바일 ≤767px / 태블릿 768~1199px / 데스크톱 1200px+
+const isMobileQuery = '(max-width:767px)';
+const isDesktopQuery = '(min-width:1200px)';
+
 export default function HeroSection() {
   const { aboutMeData, homeData } = usePortfolio();
   const { name, education, major, experience, photo } = aboutMeData.basicInfo;
   const orbitSkills = homeData.skills.slice(0, 4);
+
+  const isMobile = useMediaQuery(isMobileQuery);
+  const isDesktop = useMediaQuery(isDesktopQuery);
 
   const typedHeadline = useTypewriter(HEADLINE, TYPE_SPEED);
   const isTyping = typedHeadline.length < HEADLINE.length;
@@ -64,6 +73,7 @@ export default function HeroSection() {
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
+        py: { xs: 10, sm: 8, md: 6, lg: 0 },
       }}
     >
       {/* 도트 패턴 배경 */}
@@ -87,27 +97,29 @@ export default function HeroSection() {
         backgroundColor: 'var(--color-accent-olive)', opacity: 0.45,
       }} />
 
-      {/* 기하학적 도형 (데스크탑 전용) */}
-      <Box sx={{
-        position: 'absolute', top: '16%', left: '6%',
-        width: 130, height: 130,
-        border: '2px dashed rgba(255,255,255,0.3)',
-        borderRadius: '28px',
-        transform: 'rotate(18deg)',
-        display: { xs: 'none', md: 'block' },
-        pointerEvents: 'none',
-      }} />
-      <Box sx={{
-        position: 'absolute', bottom: '18%', right: '8%',
-        width: 90, height: 90,
-        border: '2px solid rgba(255,255,255,0.25)',
-        borderRadius: '50%',
-        display: { xs: 'none', md: 'block' },
-        pointerEvents: 'none',
-      }} />
+      {/* 기하학적 도형 (데스크톱 1200px+ 전용) */}
+      {isDesktop && (
+        <>
+          <Box sx={{
+            position: 'absolute', top: '16%', left: '6%',
+            width: 130, height: 130,
+            border: '2px dashed rgba(255,255,255,0.3)',
+            borderRadius: '28px',
+            transform: 'rotate(18deg)',
+            pointerEvents: 'none',
+          }} />
+          <Box sx={{
+            position: 'absolute', bottom: '18%', right: '8%',
+            width: 90, height: 90,
+            border: '2px solid rgba(255,255,255,0.25)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+          }} />
+        </>
+      )}
 
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-        <Grid container spacing={{ xs: 6, md: 4 }} alignItems="center">
+        <Grid container spacing={{ xs: 6, sm: 5, md: 4 }} alignItems="center">
           {/* 텍스트 영역 */}
           <Grid item xs={12} md={7} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
             {/* 섹션 라벨 */}
@@ -126,17 +138,17 @@ export default function HeroSection() {
             </Box>
 
             <Typography
-              variant="h1"
+              variant={isMobile ? 'h2' : 'h1'}
               sx={{
                 color: '#FFFFFF',
                 mb: 3,
                 fontFamily: "'Black Han Sans', 'Noto Sans KR', sans-serif",
-                fontSize: { xs: '2rem', sm: '2.8rem', md: '3.6rem' },
+                fontSize: { xs: '1.7rem', sm: '2.6rem', md: '3.1rem', lg: '3.6rem' },
                 fontWeight: 400,
-                lineHeight: 1.3,
+                lineHeight: { xs: 1.4, md: 1.3 },
                 whiteSpace: 'pre-line',
                 textShadow: '0 4px 20px rgba(0,0,0,0.25)',
-                minHeight: { xs: '5.5rem', sm: '6.5rem', md: '5rem' },
+                minHeight: { xs: '4.8rem', sm: '6rem', md: '5rem' },
               }}
             >
               {typedHeadline}
@@ -167,10 +179,10 @@ export default function HeroSection() {
                   color: '#FFFFFF',
                   opacity: 0.95,
                   mb: 5,
-                  fontSize: { xs: '1rem', md: '1.15rem' },
+                  fontSize: { xs: '0.92rem', sm: '1.05rem', md: '1.15rem' },
                   maxWidth: 560,
                   mx: { xs: 'auto', md: 0 },
-                  lineHeight: 1.8,
+                  lineHeight: { xs: 1.7, md: 1.8 },
                   textShadow: '0 2px 10px rgba(0,0,0,0.2)',
                 }}
               >
@@ -182,7 +194,11 @@ export default function HeroSection() {
             <Fade in timeout={600} style={{ transitionDelay: '1900ms' }}>
               <Box>
                 <Box sx={{
-                  display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3,
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: { xs: 1.5, sm: 2 },
+                  mb: 3,
+                  alignItems: { xs: 'stretch', sm: 'center' },
                   justifyContent: { xs: 'center', md: 'flex-start' },
                 }}>
                   {/* 주요 CTA */}
@@ -190,10 +206,12 @@ export default function HeroSection() {
                     onClick={scrollToProjects}
                     variant="contained"
                     size="large"
+                    fullWidth={isMobile}
                     sx={{
                       backgroundColor: 'var(--color-secondary)',
                       color: 'var(--color-text-on-color)',
                       fontWeight: 700,
+                      minHeight: 44,
                       boxShadow: '0 0 0 rgba(242,192,56,0.6)',
                       animation: 'ctaPulse 2.5s ease-in-out infinite',
                       transition: 'all 0.25s ease',
@@ -217,10 +235,12 @@ export default function HeroSection() {
                     onClick={scrollToContact}
                     variant="outlined"
                     size="large"
+                    fullWidth={isMobile}
                     sx={{
                       borderColor: 'rgba(255,255,255,0.7)',
                       color: '#FFFFFF',
                       borderWidth: '2px',
+                      minHeight: 44,
                       transition: 'all 0.25s ease',
                       '&:hover': {
                         borderColor: 'var(--color-secondary)',
@@ -237,7 +257,7 @@ export default function HeroSection() {
 
                 {/* 소셜 링크 */}
                 <Box sx={{
-                  display: 'flex', gap: 1.5,
+                  display: 'flex', gap: { xs: 2, sm: 1.5 },
                   justifyContent: { xs: 'center', md: 'flex-start' },
                 }}>
                   {socialLinks.map(({ id, icon, label, href }) => {
@@ -251,6 +271,8 @@ export default function HeroSection() {
                           rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                           aria-label={label}
                           sx={{
+                            width: 44,
+                            height: 44,
                             color: '#FFFFFF',
                             backgroundColor: 'rgba(255,255,255,0.12)',
                             border: '1px solid rgba(255,255,255,0.3)',
@@ -355,8 +377,11 @@ export default function HeroSection() {
           if (event.key === 'Enter' || event.key === ' ') scrollToNext();
         }}
         sx={{
-          position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', bottom: { xs: 16, md: 32 }, left: '50%', transform: 'translateX(-50%)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center',
+          minWidth: 44, minHeight: 44,
+          p: 1,
           color: '#FFFFFF', opacity: 0.8,
           cursor: 'pointer',
           animation: 'bounce 2s infinite',
