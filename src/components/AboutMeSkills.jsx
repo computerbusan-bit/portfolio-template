@@ -1,39 +1,18 @@
 import { useEffect, useState } from 'react';
 import {
-  Box, Typography, Grid, Tooltip, LinearProgress, Chip, Button,
+  Box, Typography, Grid, Tooltip, LinearProgress, Chip, Button, IconButton, Slider,
   Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, TextField,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import CodeIcon from '@mui/icons-material/Code';
-import HtmlIcon from '@mui/icons-material/Html';
-import CssIcon from '@mui/icons-material/Css';
-import JavascriptIcon from '@mui/icons-material/Javascript';
-import HubIcon from '@mui/icons-material/Hub';
-import DesignServicesIcon from '@mui/icons-material/DesignServices';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import BrushIcon from '@mui/icons-material/Brush';
-import DnsIcon from '@mui/icons-material/Dns';
-import TerminalIcon from '@mui/icons-material/Terminal';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
+import { usePortfolio } from '../hooks/usePortfolio';
+import { SKILL_ICONS, DEFAULT_SKILL_ICON } from '../utils/skillIcons';
 import {
-  skillsData as initialSkillsData,
   availableSkills,
   skillCategories,
   groupByCategory,
 } from '../data/skillsData';
-
-const ICONS = {
-  Html: HtmlIcon,
-  Css: CssIcon,
-  Javascript: JavascriptIcon,
-  Hub: HubIcon,
-  DesignServices: DesignServicesIcon,
-  PhotoCamera: PhotoCameraIcon,
-  Brush: BrushIcon,
-  Dns: DnsIcon,
-  Terminal: TerminalIcon,
-  AccountTree: AccountTreeIcon,
-};
 
 function AnimatedProgress({ value, color }) {
   const [displayValue, setDisplayValue] = useState(0);
@@ -62,10 +41,12 @@ function AnimatedProgress({ value, color }) {
 }
 
 export default function AboutMeSkills() {
-  const [skills, setSkills] = useState(initialSkillsData);
+  const { aboutMeData, updateSkillLevel, addSkill } = usePortfolio();
+  const { skills } = aboutMeData;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedSkillId, setSelectedSkillId] = useState('');
   const [newLevel, setNewLevel] = useState(50);
+  const [editingId, setEditingId] = useState(null);
 
   const addedNames = new Set(skills.map((skill) => skill.name));
   const addableSkills = availableSkills.filter((skill) => !addedNames.has(skill.name));
@@ -74,7 +55,7 @@ export default function AboutMeSkills() {
   const handleAddSkill = () => {
     const skillToAdd = addableSkills.find((skill) => skill.id === Number(selectedSkillId));
     if (!skillToAdd) return;
-    setSkills((prev) => [...prev, { ...skillToAdd, level: newLevel }]);
+    addSkill({ ...skillToAdd, level: newLevel });
     setDialogOpen(false);
     setSelectedSkillId('');
     setNewLevel(50);
@@ -122,10 +103,11 @@ export default function AboutMeSkills() {
 
             <Grid container spacing={2.5}>
               {categorySkills.map((skill) => {
-                const Icon = ICONS[skill.icon] ?? CodeIcon;
+                const Icon = SKILL_ICONS[skill.icon] ?? DEFAULT_SKILL_ICON;
+                const isEditing = editingId === skill.id;
                 return (
                   <Grid item xs={12} sm={6} md={4} key={skill.id}>
-                    <Tooltip title={skill.description} arrow placement="top">
+                    <Tooltip title={skill.description} arrow placement="top" disableHoverListener={isEditing}>
                       <Box sx={{
                         p: 2.5,
                         backgroundColor: 'var(--color-bg-primary)',
@@ -147,19 +129,42 @@ export default function AboutMeSkills() {
                               {skill.name}
                             </Typography>
                           </Box>
-                          <Chip
-                            label={`${skill.level}%`}
-                            size="small"
-                            sx={{
-                              backgroundColor: color,
-                              color: 'var(--color-text-on-color)',
-                              fontWeight: 700,
-                              fontSize: '0.7rem',
-                              height: 20,
-                            }}
-                          />
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Chip
+                              label={`${skill.level}%`}
+                              size="small"
+                              sx={{
+                                backgroundColor: color,
+                                color: 'var(--color-text-on-color)',
+                                fontWeight: 700,
+                                fontSize: '0.7rem',
+                                height: 20,
+                              }}
+                            />
+                            <IconButton
+                              size="small"
+                              onClick={() => setEditingId(isEditing ? null : skill.id)}
+                              aria-label="숙련도 수정"
+                            >
+                              {isEditing
+                                ? <CheckRoundedIcon fontSize="inherit" />
+                                : <EditRoundedIcon fontSize="inherit" />}
+                            </IconButton>
+                          </Box>
                         </Box>
-                        <AnimatedProgress value={skill.level} color={color} />
+                        {isEditing ? (
+                          <Slider
+                            size="small"
+                            value={skill.level}
+                            min={0}
+                            max={100}
+                            valueLabelDisplay="auto"
+                            onChange={(_event, value) => updateSkillLevel(skill.id, value)}
+                            sx={{ color }}
+                          />
+                        ) : (
+                          <AnimatedProgress value={skill.level} color={color} />
+                        )}
                       </Box>
                     </Tooltip>
                   </Grid>

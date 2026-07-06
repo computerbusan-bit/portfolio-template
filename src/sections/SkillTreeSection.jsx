@@ -1,10 +1,14 @@
-import { Box, Typography, Container, Grid, LinearProgress, Chip } from '@mui/material';
+import { Link } from 'react-router-dom';
+import { Box, Typography, Container, Button } from '@mui/material';
 import CodeIcon from '@mui/icons-material/Code';
-import { skillsData, skillCategories, getMainSkills, groupByCategory } from '../data/skillsData';
-
-const groupedMainSkills = groupByCategory(getMainSkills(skillsData));
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { usePortfolio } from '../hooks/usePortfolio';
+import { SKILL_ICONS, DEFAULT_SKILL_ICON } from '../utils/skillIcons';
 
 export default function SkillTreeSection() {
+  const { homeData } = usePortfolio();
+  const { skills } = homeData;
+
   return (
     <Box
       component="section"
@@ -12,7 +16,7 @@ export default function SkillTreeSection() {
     >
       <Container maxWidth="md">
         {/* 헤더 */}
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Box sx={{
             display: 'inline-flex', alignItems: 'center', gap: 1,
             px: 2, py: 0.5, mb: 2,
@@ -39,73 +43,47 @@ export default function SkillTreeSection() {
             color: 'var(--color-text-secondary)',
             mt: 1.5,
           }}>
-            자신 있는 순서대로 정리한 기술 스택이에요.
+            자신 있는 순서대로 정리한 상위 스킬이에요.
           </Typography>
         </Box>
 
-        {/* 카테고리별 스킬 바 */}
-        {groupedMainSkills.map(({ category, skills: categorySkills }) => {
-          const color = skillCategories[category]?.color ?? 'var(--color-primary)';
-          return (
-            <Box key={category} sx={{ mb: 5, '&:last-of-type': { mb: 0 } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <Box sx={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: color }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'var(--color-text-on-color)' }}>
-                  {category}
+        {/* 상위 4개 스킬 */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3, mb: 5 }}>
+          {skills.map((skill) => {
+            const Icon = SKILL_ICONS[skill.icon] ?? DEFAULT_SKILL_ICON;
+            return (
+              <Box key={skill.id} sx={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                p: 3, minWidth: 120,
+                backgroundColor: 'var(--color-bg-primary)',
+                borderRadius: '16px',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                border: '1px solid var(--color-border-warm)',
+              }}>
+                <Icon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                  {skill.name}
                 </Typography>
               </Box>
+            );
+          })}
+        </Box>
 
-              <Grid container spacing={3}>
-                {categorySkills.map(({ id, name, level }) => (
-                  <Grid item xs={12} sm={6} key={id}>
-                    <Box sx={{
-                      p: 3,
-                      backgroundColor: 'var(--color-bg-primary)',
-                      borderRadius: '12px',
-                      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-                      border: '1px solid var(--color-border-warm)',
-                    }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box sx={{
-                            width: 10, height: 10, borderRadius: '50%',
-                            backgroundColor: color,
-                          }} />
-                          <Typography variant="body2" sx={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                            {name}
-                          </Typography>
-                        </Box>
-                        <Chip
-                          label={`${level}%`}
-                          size="small"
-                          sx={{
-                            backgroundColor: color,
-                            color: 'var(--color-text-on-color)',
-                            fontWeight: 700,
-                            fontSize: '0.7rem',
-                            height: 20,
-                          }}
-                        />
-                      </Box>
-                      <LinearProgress
-                        variant="determinate"
-                        value={level}
-                        sx={{
-                          height: 8, borderRadius: 4,
-                          backgroundColor: 'var(--color-border-light)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: color,
-                            borderRadius: 4,
-                          },
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          );
-        })}
+        <Box sx={{ textAlign: 'center' }}>
+          <Button
+            component={Link}
+            to="/about"
+            variant="contained"
+            endIcon={<ArrowForwardRoundedIcon />}
+            sx={{
+              backgroundColor: 'var(--color-button-primary)',
+              color: 'var(--color-button-primary-text)',
+              '&:hover': { backgroundColor: 'var(--color-button-hover)' },
+            }}
+          >
+            전체 스킬 보기
+          </Button>
+        </Box>
       </Container>
     </Box>
   );

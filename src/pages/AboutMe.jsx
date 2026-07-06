@@ -1,12 +1,11 @@
-import { useState } from 'react';
 import { Box, Typography, Container } from '@mui/material';
-import { aboutMeData as initialAboutMeData } from '../data/aboutMeData';
+import { usePortfolio } from '../hooks/usePortfolio';
 import AboutMeBasicInfoCard from '../components/AboutMeBasicInfoCard';
 import AboutMeAccordion from '../components/AboutMeAccordion';
 import AboutMeSkills from '../components/AboutMeSkills';
 
 export default function AboutMe() {
-  const [aboutMeData] = useState(initialAboutMeData);
+  const { aboutMeData, updateSectionContent } = usePortfolio();
   const { basicInfo, sections } = aboutMeData;
 
   return (
@@ -51,7 +50,12 @@ export default function AboutMe() {
 
         {/* 콘텐츠 섹션 (아코디언) */}
         <Box sx={{ mb: { xs: 4, md: 6 } }}>
-          <AboutMeAccordion sections={sections} showHomeBadge />
+          <AboutMeAccordion
+            sections={sections}
+            showHomeBadge
+            editable
+            onUpdateContent={updateSectionContent}
+          />
         </Box>
 
         {/* 스킬 섹션 */}
