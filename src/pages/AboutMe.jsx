@@ -3,6 +3,7 @@ import { Box, Typography, Container } from '@mui/material';
 import { aboutMeData as initialAboutMeData } from '../data/aboutMeData';
 import AboutMeBasicInfoCard from '../components/AboutMeBasicInfoCard';
 import AboutMeAccordion from '../components/AboutMeAccordion';
+import AboutMeSkills from '../components/AboutMeSkills';
 
 export default function AboutMe() {
   const [aboutMeData] = useState(initialAboutMeData);
@@ -49,7 +50,12 @@ export default function AboutMe() {
         </Box>
 
         {/* 콘텐츠 섹션 (아코디언) */}
-        <AboutMeAccordion sections={sections} showHomeBadge />
+        <Box sx={{ mb: { xs: 4, md: 6 } }}>
+          <AboutMeAccordion sections={sections} showHomeBadge />
+        </Box>
+
+        {/* 스킬 섹션 */}
+        <AboutMeSkills />
       </Container>
     </Box>
   );
