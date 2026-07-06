@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Box, Typography, Accordion, AccordionSummary, AccordionDetails, Chip,
-  IconButton, TextField, Button,
+  IconButton, TextField, Button, Fade, Snackbar, Alert,
 } from '@mui/material';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
@@ -21,6 +21,7 @@ export default function AboutMeAccordion({
   const [expanded, setExpanded] = useState(sections[0]?.id ?? false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState('');
+  const [savedMessage, setSavedMessage] = useState('');
 
   const handleChange = (panelId) => (_event, isExpanded) => {
     setExpanded(isExpanded ? panelId : false);
@@ -38,11 +39,15 @@ export default function AboutMeAccordion({
     setDraft('');
   };
 
-  const saveEditing = (id) => {
-    onUpdateContent?.(id, draft);
+  const saveEditing = (section) => {
+    if (!draft.trim()) return;
+    onUpdateContent?.(section.id, draft.trim());
     setEditingId(null);
     setDraft('');
+    setSavedMessage(`"${section.title}" 내용이 저장됐어요.`);
   };
+
+  const isDraftEmpty = editingId !== null && !draft.trim();
 
   return (
     <Box>
@@ -101,7 +106,7 @@ export default function AboutMeAccordion({
                   size="small"
                   onClick={(event) => startEditing(event, section)}
                   sx={{ ml: 'auto', color: 'var(--color-text-secondary)' }}
-                  aria-label="내용 수정"
+                  aria-label={`${section.title} 내용 수정`}
                 >
                   <EditRoundedIcon fontSize="small" />
                 </IconButton>
@@ -109,25 +114,41 @@ export default function AboutMeAccordion({
             </AccordionSummary>
             <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
               {isEditing ? (
-                <Box>
-                  <TextField
-                    value={draft}
-                    onChange={(event) => setDraft(event.target.value)}
-                    multiline
-                    minRows={4}
-                    fullWidth
-                    autoFocus
-                  />
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1.5 }}>
-                    <Button onClick={cancelEditing}>취소</Button>
-                    <Button variant="contained" onClick={() => saveEditing(section.id)}>저장</Button>
+                <Fade in={isEditing}>
+                  <Box>
+                    <TextField
+                      value={draft}
+                      onChange={(event) => setDraft(event.target.value)}
+                      multiline
+                      minRows={4}
+                      fullWidth
+                      autoFocus
+                      error={isDraftEmpty}
+                      helperText={isDraftEmpty ? '내용을 입력해주세요.' : ' '}
+                      label={`${section.title} 내용`}
+                      aria-label={`${section.title} 내용 수정 입력란`}
+                    />
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
+                      <Button onClick={cancelEditing}>취소</Button>
+                      <Button
+                        variant="contained"
+                        onClick={() => saveEditing(section)}
+                        disabled={isDraftEmpty}
+                      >
+                        저장
+                      </Button>
+                    </Box>
                   </Box>
-                </Box>
+                </Fade>
               ) : (
-                <Typography variant="body1" sx={{
-                  color: 'var(--color-text-secondary)',
-                  lineHeight: 1.9,
-                }}>
+                <Typography
+                  variant="body1"
+                  aria-live="polite"
+                  sx={{
+                    color: 'var(--color-text-secondary)',
+                    lineHeight: 1.9,
+                  }}
+                >
                   {section.content}
                 </Typography>
               )}
@@ -135,6 +156,17 @@ export default function AboutMeAccordion({
           </Accordion>
         );
       })}
+
+      <Snackbar
+        open={Boolean(savedMessage)}
+        autoHideDuration={2500}
+        onClose={() => setSavedMessage('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" variant="filled" onClose={() => setSavedMessage('')}>
+          {savedMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

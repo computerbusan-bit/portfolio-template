@@ -13,37 +13,37 @@ export function PortfolioProvider({ children }) {
     skills: initialSkillsData,
   });
 
-  const updateBasicInfo = (updates) => {
+  const updateBasicInfo = useCallback((updates) => {
     setAboutMeData((prev) => ({
       ...prev,
       basicInfo: { ...prev.basicInfo, ...updates },
     }));
-  };
+  }, []);
 
-  const updateSectionContent = (id, content) => {
+  const updateSectionContent = useCallback((id, content) => {
     setAboutMeData((prev) => ({
       ...prev,
       sections: prev.sections.map((section) => (
         section.id === id ? { ...section, content } : section
       )),
     }));
-  };
+  }, []);
 
-  const updateSkillLevel = (id, level) => {
+  const updateSkillLevel = useCallback((id, level) => {
     setAboutMeData((prev) => ({
       ...prev,
       skills: prev.skills.map((skill) => (
         skill.id === id ? { ...skill, level } : skill
       )),
     }));
-  };
+  }, []);
 
-  const addSkill = (skill) => {
+  const addSkill = useCallback((skill) => {
     setAboutMeData((prev) => ({
       ...prev,
       skills: [...prev.skills, skill],
     }));
-  };
+  }, []);
 
   const homeData = useMemo(() => {
     const content = aboutMeData.sections
@@ -72,7 +72,15 @@ export function PortfolioProvider({ children }) {
     addSkill,
     homeData,
     getHomeData,
-  }), [aboutMeData, homeData, getHomeData]);
+  }), [
+    aboutMeData,
+    homeData,
+    getHomeData,
+    updateBasicInfo,
+    updateSectionContent,
+    updateSkillLevel,
+    addSkill,
+  ]);
 
   return (
     <PortfolioContext.Provider value={value}>

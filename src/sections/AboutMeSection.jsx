@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Box, Typography, Container, Grid, Button } from '@mui/material';
+import { Box, Typography, Container, Grid, Button, Fade } from '@mui/material';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { SKILL_ICONS, DEFAULT_SKILL_ICON } from '../utils/skillIcons';
@@ -59,21 +59,26 @@ export default function AboutMeSection() {
               boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
             }}>
               {devStory && (
-                <>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: 'var(--color-text-primary)', mb: 1.5 }}>
-                    {devStory.title}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'var(--color-text-secondary)', lineHeight: 1.9 }}>
-                    {devStory.summary}
-                  </Typography>
-                </>
+                <Fade in key={devStory.summary} timeout={400}>
+                  <Box aria-live="polite">
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: 'var(--color-text-primary)', mb: 1.5 }}>
+                      {devStory.title}
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: 'var(--color-text-secondary)', lineHeight: 1.9 }}>
+                      {devStory.summary}
+                    </Typography>
+                  </Box>
+                </Fade>
               )}
             </Box>
           </Grid>
         </Grid>
 
         {/* 하단: 주요 스킬 4개 */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 1.5, mt: 4 }}>
+        <Box
+          aria-label="주요 스킬"
+          sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 1.5, mt: 4 }}
+        >
           {skills.map((skill) => {
             const Icon = SKILL_ICONS[skill.icon] ?? DEFAULT_SKILL_ICON;
             return (

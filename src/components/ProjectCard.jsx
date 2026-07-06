@@ -50,6 +50,7 @@ export function ProjectCard({ project }) {
             component="img"
             image={thumbnailUrl}
             alt={project.title}
+            loading="lazy"
             onError={() => setImgError(true)}
             sx={{
               position: 'absolute',

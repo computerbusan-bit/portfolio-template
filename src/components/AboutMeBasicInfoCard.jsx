@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import { Box, Card, CardContent, Typography, Grid } from '@mui/material';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import WorkRoundedIcon from '@mui/icons-material/WorkRounded';
 
-export default function AboutMeBasicInfoCard({ basicInfo }) {
+function AboutMeBasicInfoCard({ basicInfo }) {
   return (
     <Card sx={{
       border: '1px solid var(--color-border-light)',
@@ -12,16 +13,20 @@ export default function AboutMeBasicInfoCard({ basicInfo }) {
         <Grid container spacing={3} alignItems="center">
           {/* 캐릭터 프로필 */}
           <Grid item xs={12} sm="auto" sx={{ textAlign: 'center' }}>
-            <Box sx={{
-              width: 120, height: 120,
-              borderRadius: '50%',
-              backgroundColor: 'var(--color-accent-purple)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              mx: 'auto',
-              fontSize: '3.5rem',
-              boxShadow: '0 8px 32px rgba(196,168,206,0.4)',
-              flexShrink: 0,
-            }}>
+            <Box
+              role="img"
+              aria-label={`${basicInfo.name} 프로필 캐릭터`}
+              sx={{
+                width: 120, height: 120,
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-accent-purple)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                mx: 'auto',
+                fontSize: '3.5rem',
+                boxShadow: '0 8px 32px rgba(196,168,206,0.4)',
+                flexShrink: 0,
+              }}
+            >
               {basicInfo.photo}
             </Box>
           </Grid>
@@ -61,3 +66,5 @@ export default function AboutMeBasicInfoCard({ basicInfo }) {
     </Card>
   );
 }
+
+export default memo(AboutMeBasicInfoCard);

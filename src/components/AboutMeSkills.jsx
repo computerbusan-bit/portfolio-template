@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Box, Typography, Grid, Tooltip, LinearProgress, Chip, Button, IconButton, Slider,
-  Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, TextField,
+  Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, TextField, Snackbar, Alert,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
@@ -26,6 +26,7 @@ function AnimatedProgress({ value, color }) {
     <LinearProgress
       variant="determinate"
       value={displayValue}
+      aria-label="숙련도"
       sx={{
         height: 8,
         borderRadius: 4,
@@ -40,6 +41,78 @@ function AnimatedProgress({ value, color }) {
   );
 }
 
+const SkillCard = memo(function SkillCard({
+  skill, color, isEditing, onToggleEdit, onLevelChange, onLevelCommit,
+}) {
+  const Icon = SKILL_ICONS[skill.icon] ?? DEFAULT_SKILL_ICON;
+
+  return (
+    <Tooltip title={skill.description} arrow placement="top" disableHoverListener={isEditing}>
+      <Box sx={{
+        p: 2.5,
+        backgroundColor: 'var(--color-bg-primary)',
+        borderRadius: '12px',
+        border: '1px solid var(--color-border-light)',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        '&:hover': {
+          transform: 'translateY(-3px)',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
+        },
+      }}>
+        <Box sx={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5,
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Icon sx={{ color, fontSize: 22 }} />
+            <Typography sx={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
+              {skill.name}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Chip
+              label={`${skill.level}%`}
+              size="small"
+              sx={{
+                backgroundColor: color,
+                color: 'var(--color-text-on-color)',
+                fontWeight: 700,
+                fontSize: '0.7rem',
+                height: 20,
+              }}
+            />
+            <IconButton
+              size="small"
+              onClick={() => onToggleEdit(skill.id)}
+              aria-label={`${skill.name} 숙련도 수정`}
+              aria-pressed={isEditing}
+            >
+              {isEditing
+                ? <CheckRoundedIcon fontSize="inherit" />
+                : <EditRoundedIcon fontSize="inherit" />}
+            </IconButton>
+          </Box>
+        </Box>
+        {isEditing ? (
+          <Slider
+            size="small"
+            value={skill.level}
+            min={0}
+            max={100}
+            valueLabelDisplay="auto"
+            onChange={(_event, value) => onLevelChange(skill.id, value)}
+            onChangeCommitted={(_event, value) => onLevelCommit(skill, value)}
+            aria-label={`${skill.name} 숙련도`}
+            sx={{ color }}
+          />
+        ) : (
+          <AnimatedProgress value={skill.level} color={color} />
+        )}
+      </Box>
+    </Tooltip>
+  );
+});
+
 export default function AboutMeSkills() {
   const { aboutMeData, updateSkillLevel, addSkill } = usePortfolio();
   const { skills } = aboutMeData;
@@ -47,10 +120,14 @@ export default function AboutMeSkills() {
   const [selectedSkillId, setSelectedSkillId] = useState('');
   const [newLevel, setNewLevel] = useState(50);
   const [editingId, setEditingId] = useState(null);
+  const [savedMessage, setSavedMessage] = useState('');
 
-  const addedNames = new Set(skills.map((skill) => skill.name));
-  const addableSkills = availableSkills.filter((skill) => !addedNames.has(skill.name));
-  const groupedSkills = groupByCategory(skills);
+  const addedNames = useMemo(() => new Set(skills.map((skill) => skill.name)), [skills]);
+  const addableSkills = useMemo(
+    () => availableSkills.filter((skill) => !addedNames.has(skill.name)),
+    [addedNames],
+  );
+  const groupedSkills = useMemo(() => groupByCategory(skills), [skills]);
 
   const handleAddSkill = () => {
     const skillToAdd = addableSkills.find((skill) => skill.id === Number(selectedSkillId));
@@ -59,7 +136,17 @@ export default function AboutMeSkills() {
     setDialogOpen(false);
     setSelectedSkillId('');
     setNewLevel(50);
+    setSavedMessage(`${skillToAdd.name}이(가) 추가됐어요.`);
   };
+
+  const handleToggleEdit = useCallback((id) => {
+    setEditingId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const handleLevelCommit = useCallback((skill, value) => {
+    updateSkillLevel(skill.id, value);
+    setSavedMessage(`${skill.name} 숙련도가 ${value}%로 저장됐어요.`);
+  }, [updateSkillLevel]);
 
   return (
     <Box>
@@ -102,74 +189,18 @@ export default function AboutMeSkills() {
             </Box>
 
             <Grid container spacing={2.5}>
-              {categorySkills.map((skill) => {
-                const Icon = SKILL_ICONS[skill.icon] ?? DEFAULT_SKILL_ICON;
-                const isEditing = editingId === skill.id;
-                return (
-                  <Grid item xs={12} sm={6} md={4} key={skill.id}>
-                    <Tooltip title={skill.description} arrow placement="top" disableHoverListener={isEditing}>
-                      <Box sx={{
-                        p: 2.5,
-                        backgroundColor: 'var(--color-bg-primary)',
-                        borderRadius: '12px',
-                        border: '1px solid var(--color-border-light)',
-                        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        '&:hover': {
-                          transform: 'translateY(-3px)',
-                          boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
-                        },
-                      }}>
-                        <Box sx={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5,
-                        }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Icon sx={{ color, fontSize: 22 }} />
-                            <Typography sx={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                              {skill.name}
-                            </Typography>
-                          </Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <Chip
-                              label={`${skill.level}%`}
-                              size="small"
-                              sx={{
-                                backgroundColor: color,
-                                color: 'var(--color-text-on-color)',
-                                fontWeight: 700,
-                                fontSize: '0.7rem',
-                                height: 20,
-                              }}
-                            />
-                            <IconButton
-                              size="small"
-                              onClick={() => setEditingId(isEditing ? null : skill.id)}
-                              aria-label="숙련도 수정"
-                            >
-                              {isEditing
-                                ? <CheckRoundedIcon fontSize="inherit" />
-                                : <EditRoundedIcon fontSize="inherit" />}
-                            </IconButton>
-                          </Box>
-                        </Box>
-                        {isEditing ? (
-                          <Slider
-                            size="small"
-                            value={skill.level}
-                            min={0}
-                            max={100}
-                            valueLabelDisplay="auto"
-                            onChange={(_event, value) => updateSkillLevel(skill.id, value)}
-                            sx={{ color }}
-                          />
-                        ) : (
-                          <AnimatedProgress value={skill.level} color={color} />
-                        )}
-                      </Box>
-                    </Tooltip>
-                  </Grid>
-                );
-              })}
+              {categorySkills.map((skill) => (
+                <Grid item xs={12} sm={6} md={4} key={skill.id}>
+                  <SkillCard
+                    skill={skill}
+                    color={color}
+                    isEditing={editingId === skill.id}
+                    onToggleEdit={handleToggleEdit}
+                    onLevelChange={updateSkillLevel}
+                    onLevelCommit={handleLevelCommit}
+                  />
+                </Grid>
+              ))}
             </Grid>
           </Box>
         );
@@ -206,6 +237,17 @@ export default function AboutMeSkills() {
           <Button onClick={handleAddSkill} disabled={!selectedSkillId} variant="contained">추가</Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={Boolean(savedMessage)}
+        autoHideDuration={2500}
+        onClose={() => setSavedMessage('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" variant="filled" onClose={() => setSavedMessage('')}>
+          {savedMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

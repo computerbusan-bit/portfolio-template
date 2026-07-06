@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Box, Typography, Container, Button } from '@mui/material';
+import { Box, Typography, Container, Button, Fade } from '@mui/material';
 import CodeIcon from '@mui/icons-material/Code';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import { usePortfolio } from '../hooks/usePortfolio';
@@ -48,23 +48,28 @@ export default function SkillTreeSection() {
         </Box>
 
         {/* 상위 4개 스킬 */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3, mb: 5 }}>
-          {skills.map((skill) => {
+        <Box
+          aria-label="상위 4개 스킬"
+          sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3, mb: 5 }}
+        >
+          {skills.map((skill, index) => {
             const Icon = SKILL_ICONS[skill.icon] ?? DEFAULT_SKILL_ICON;
             return (
-              <Box key={skill.id} sx={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
-                p: 3, minWidth: 120,
-                backgroundColor: 'var(--color-bg-primary)',
-                borderRadius: '16px',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-                border: '1px solid var(--color-border-warm)',
-              }}>
-                <Icon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
-                <Typography variant="body2" sx={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                  {skill.name}
-                </Typography>
-              </Box>
+              <Fade in key={skill.id} timeout={300 + index * 100}>
+                <Box sx={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                  p: 3, minWidth: 120,
+                  backgroundColor: 'var(--color-bg-primary)',
+                  borderRadius: '16px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                  border: '1px solid var(--color-border-warm)',
+                }}>
+                  <Icon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                    {skill.name}
+                  </Typography>
+                </Box>
+              </Fade>
             );
           })}
         </Box>
