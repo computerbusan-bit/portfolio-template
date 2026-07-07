@@ -121,7 +121,15 @@ export default function HeroSection() {
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <Grid container spacing={{ xs: 6, sm: 5, md: 4 }} alignItems="center">
           {/* 텍스트 영역 */}
-          <Grid item xs={12} md={7} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+          <Grid
+            item
+            xs={12}
+            md={7}
+            sx={{
+              textAlign: isMobile ? 'center' : 'left',
+              '@media (min-width:768px)': { flexBasis: '58.333%', maxWidth: '58.333%' },
+            }}
+          >
             {/* 섹션 라벨 */}
             <Box sx={{
               display: 'inline-block',
@@ -181,7 +189,7 @@ export default function HeroSection() {
                   mb: 5,
                   fontSize: { xs: '0.92rem', sm: '1.05rem', md: '1.15rem' },
                   maxWidth: 560,
-                  mx: { xs: 'auto', md: 0 },
+                  mx: isMobile ? 'auto' : 0,
                   lineHeight: { xs: 1.7, md: 1.8 },
                   textShadow: '0 2px 10px rgba(0,0,0,0.2)',
                 }}
@@ -195,11 +203,11 @@ export default function HeroSection() {
               <Box>
                 <Box sx={{
                   display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
+                  flexDirection: isMobile ? 'column' : 'row',
                   gap: { xs: 1.5, sm: 2 },
                   mb: 3,
-                  alignItems: { xs: 'stretch', sm: 'center' },
-                  justifyContent: { xs: 'center', md: 'flex-start' },
+                  alignItems: isMobile ? 'stretch' : 'center',
+                  justifyContent: isMobile ? 'center' : 'flex-start',
                 }}>
                   {/* 주요 CTA */}
                   <Button
@@ -258,7 +266,7 @@ export default function HeroSection() {
                 {/* 소셜 링크 */}
                 <Box sx={{
                   display: 'flex', gap: { xs: 2, sm: 1.5 },
-                  justifyContent: { xs: 'center', md: 'flex-start' },
+                  justifyContent: isMobile ? 'center' : 'flex-start',
                 }}>
                   {socialLinks.map(({ id, icon, label, href }) => {
                     const Icon = SOCIAL_ICONS[icon];
@@ -296,7 +304,16 @@ export default function HeroSection() {
           </Grid>
 
           {/* 비주얼 영역: 프로필 + 떠다니는 스킬 아이콘 */}
-          <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Grid
+            item
+            xs={12}
+            md={5}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              '@media (min-width:768px)': { flexBasis: '41.667%', maxWidth: '41.667%' },
+            }}
+          >
             <Fade in timeout={700} style={{ transitionDelay: '300ms' }}>
               <Box sx={{
                 position: 'relative',

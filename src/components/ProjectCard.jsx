@@ -80,12 +80,17 @@ export function ProjectCard({ project }) {
         p: 2.5,
         '&:last-child': { pb: 2.5 },
       }}>
-        {/* 제목 */}
+        {/* 제목 — 항상 2줄 높이 확보(1줄이어도 아래 요소 위치 고정) */}
         <Typography sx={{
           fontWeight: 700,
           color: 'var(--color-text-primary)',
           fontSize: '1rem',
           lineHeight: 1.4,
+          minHeight: '2.8em',
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
         }}>
           {project.title}
         </Typography>
@@ -94,6 +99,7 @@ export function ProjectCard({ project }) {
         <Typography variant="body2" sx={{
           color: 'var(--color-text-muted)',
           lineHeight: 1.65,
+          minHeight: '3.3em',
           flex: 1,
           overflow: 'hidden',
           display: '-webkit-box',
@@ -103,9 +109,9 @@ export function ProjectCard({ project }) {
           {project.description}
         </Typography>
 
-        {/* 기술 스택 뱃지 */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-          {project.tech_stack?.map(tech => (
+        {/* 기술 스택 뱃지 — 최대 4개 + 나머지는 +N 표시로 항상 한 줄 높이 유지 */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, minHeight: 22 }}>
+          {project.tech_stack?.slice(0, 4).map(tech => (
             <Chip
               key={tech}
               label={tech}
@@ -121,10 +127,25 @@ export function ProjectCard({ project }) {
               }}
             />
           ))}
+          {project.tech_stack?.length > 4 && (
+            <Chip
+              label={`+${project.tech_stack.length - 4}`}
+              size="small"
+              sx={{
+                bgcolor: 'var(--color-bg-secondary)',
+                color: 'var(--color-text-muted)',
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                border: '1px solid var(--color-border-warm)',
+                height: 22,
+                '& .MuiChip-label': { px: 1 },
+              }}
+            />
+          )}
         </Box>
 
         {/* 버튼 */}
-        <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
           {project.detail_url && (
             <Button
               component="a"
@@ -135,8 +156,7 @@ export function ProjectCard({ project }) {
               size="small"
               endIcon={<OpenInNewRoundedIcon sx={{ fontSize: '0.8rem !important' }} />}
               sx={{
-                flex: 1,
-                minWidth: 0,
+                flex: '1 1 110px',
                 fontSize: '0.78rem',
                 py: 0.8,
                 whiteSpace: 'nowrap',
@@ -163,8 +183,7 @@ export function ProjectCard({ project }) {
               size="small"
               startIcon={<GitHubIcon sx={{ fontSize: '0.85rem !important' }} />}
               sx={{
-                flex: 1,
-                minWidth: 0,
+                flex: '1 1 110px',
                 fontSize: '0.78rem',
                 py: 0.8,
                 whiteSpace: 'nowrap',
