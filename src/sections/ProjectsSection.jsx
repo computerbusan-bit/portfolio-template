@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, Container, Grid, Button } from '@mui/material';
+import { Box, Typography, Container, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ProjectCard, ProjectCardSkeleton } from '../components/ProjectCard';
@@ -58,32 +58,32 @@ export default function ProjectsSection() {
           </Typography>
         </Box>
 
-        {/* 카드 그리드 — 데스크톱 3열 / 태블릿 2열 / 모바일 1열 */}
-        <Grid container spacing={3} sx={{ mb: 6 }}>
+        {/* 카드 그리드 — 데스크톱 3열 / 태블릿 2열 / 모바일 1열 (CSS Grid: 각 열이 항상 균등한 폭을 보장) */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 3,
+            mb: 6,
+          }}
+        >
           {loading ? (
-            [0, 1, 2].map(i => (
-              <Grid item xs={12} sm={6} md={4} key={i}>
-                <ProjectCardSkeleton />
-              </Grid>
-            ))
+            [0, 1, 2].map(i => <ProjectCardSkeleton key={i} />)
           ) : projects.length === 0 ? (
-            <Grid item xs={12}>
-              <Box sx={{
-                textAlign: 'center', py: 10,
-                color: 'var(--color-text-muted)',
-              }}>
-                <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>🗂️</Typography>
-                <Typography variant="body1">프로젝트를 준비 중입니다.</Typography>
-              </Box>
-            </Grid>
+            <Box sx={{
+              gridColumn: '1 / -1',
+              textAlign: 'center', py: 10,
+              color: 'var(--color-text-muted)',
+            }}>
+              <Typography sx={{ fontSize: '2.5rem', mb: 1 }}>🗂️</Typography>
+              <Typography variant="body1">프로젝트를 준비 중입니다.</Typography>
+            </Box>
           ) : (
             projects.map(project => (
-              <Grid item xs={12} sm={6} md={4} key={project.id}>
-                <ProjectCard project={project} />
-              </Grid>
+              <ProjectCard key={project.id} project={project} />
             ))
           )}
-        </Grid>
+        </Box>
 
         {/* 더 보기 버튼 */}
         {!loading && projects.length > 0 && (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, Container, Grid } from '@mui/material';
+import { Box, Typography, Container } from '@mui/material';
 import { supabase } from '../lib/supabase';
 import { ProjectCard, ProjectCardSkeleton } from '../components/ProjectCard';
 
@@ -60,41 +60,40 @@ export default function Projects() {
           </Typography>
         </Box>
 
-        {/* 카드 그리드 — 데스크톱 3열 / 태블릿 2열 / 모바일 1열 */}
-        <Grid container spacing={3}>
+        {/* 카드 그리드 — 데스크톱 3열 / 태블릿 2열 / 모바일 1열 (CSS Grid: 각 열이 항상 균등한 폭을 보장) */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 3,
+          }}
+        >
           {loading ? (
-            [0, 1, 2, 3, 4, 5].map(i => (
-              <Grid item xs={12} sm={6} md={4} key={i}>
-                <ProjectCardSkeleton />
-              </Grid>
-            ))
+            [0, 1, 2, 3, 4, 5].map(i => <ProjectCardSkeleton key={i} />)
           ) : projects.length === 0 ? (
-            <Grid item xs={12}>
-              <Box sx={{
-                textAlign: 'center', py: 14,
-                bgcolor: 'var(--color-bg-secondary)',
-                borderRadius: '20px',
-                border: '1px dashed var(--color-border-warm)',
+            <Box sx={{
+              gridColumn: '1 / -1',
+              textAlign: 'center', py: 14,
+              bgcolor: 'var(--color-bg-secondary)',
+              borderRadius: '20px',
+              border: '1px dashed var(--color-border-warm)',
+            }}>
+              <Typography sx={{ fontSize: '3rem', mb: 2 }}>🗂️</Typography>
+              <Typography variant="h4" sx={{
+                color: 'var(--color-text-primary)', fontWeight: 700, mb: 1,
               }}>
-                <Typography sx={{ fontSize: '3rem', mb: 2 }}>🗂️</Typography>
-                <Typography variant="h4" sx={{
-                  color: 'var(--color-text-primary)', fontWeight: 700, mb: 1,
-                }}>
-                  프로젝트 준비 중
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'var(--color-text-muted)' }}>
-                  곧 멋진 프로젝트들을 소개할게요!
-                </Typography>
-              </Box>
-            </Grid>
+                프로젝트 준비 중
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'var(--color-text-muted)' }}>
+                곧 멋진 프로젝트들을 소개할게요!
+              </Typography>
+            </Box>
           ) : (
             projects.map(project => (
-              <Grid item xs={12} sm={6} md={4} key={project.id}>
-                <ProjectCard project={project} />
-              </Grid>
+              <ProjectCard key={project.id} project={project} />
             ))
           )}
-        </Grid>
+        </Box>
       </Container>
     </Box>
   );
