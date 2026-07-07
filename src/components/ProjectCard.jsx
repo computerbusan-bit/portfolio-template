@@ -25,7 +25,9 @@ export function ProjectCard({ project }) {
 
   return (
     <Card sx={{
+      width: '100%',
       height: '100%',
+      boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
       border: '1px solid var(--color-border-light)',
@@ -39,6 +41,7 @@ export function ProjectCard({ project }) {
     }}>
       {/* 썸네일 — 실제 스크린샷 비율(1280x800 = 8:5)에 맞춤 */}
       <Box sx={{
+        width: '100%',
         position: 'relative',
         paddingTop: '62.5%',
         overflow: 'hidden',
@@ -215,7 +218,7 @@ export function ProjectCardSkeleton() {
       borderRadius: '14px',
       overflow: 'hidden',
     }}>
-      <Box sx={{ paddingTop: '100%', position: 'relative' }}>
+      <Box sx={{ width: '100%', paddingTop: '62.5%', position: 'relative' }}>
         <Skeleton
           variant="rectangular"
           sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
