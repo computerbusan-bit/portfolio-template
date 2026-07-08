@@ -81,7 +81,7 @@ export default function HeroSection() {
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
-        py: { xs: 10, sm: 8, md: 6, lg: 0 },
+        py: { xs: 10, sm: 8, md: 6 },
       }}
     >
       {/* 도트 패턴 배경 */}
