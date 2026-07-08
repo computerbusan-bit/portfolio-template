@@ -7,9 +7,14 @@ import { usePortfolio } from '../hooks/usePortfolio';
 import { SKILL_ICONS, DEFAULT_SKILL_ICON } from '../utils/skillIcons';
 import { socialLinks } from '../data/socialLinks';
 import { SOCIAL_ICONS } from '../utils/socialIcons';
+import { MOBILE_QUERY, DESKTOP_QUERY } from '../utils/breakpoints';
+import { HOVER_CAPABLE, gradientSweepBg, iconGlowSx } from '../utils/hoverEffects';
+import { useScrollLinked } from '../hooks/useScrollLinked';
+import RoleTypewriter from '../components/RoleTypewriter';
 
 const HEADLINE = '안 되는 이유를 찾아내고,\n되는 방법을 만들어내는 개발자';
 const TYPE_SPEED = 55;
+const ROLE_WORDS = ['개발자', '디자이너', '크리에이터'];
 
 function useTypewriter(text, speed) {
   const [typed, setTyped] = useState('');
@@ -35,20 +40,23 @@ const ORBIT_POSITIONS = [
   { bottom: '-6%', right: '10%' },
 ];
 
-// 요청된 브레이크포인트: 모바일 ≤767px / 태블릿 768~1199px / 데스크톱 1200px+
-const isMobileQuery = '(max-width:767px)';
-const isDesktopQuery = '(min-width:1200px)';
-
 export default function HeroSection() {
   const { aboutMeData, homeData } = usePortfolio();
   const { name, education, major, experience, photo } = aboutMeData.basicInfo;
   const orbitSkills = homeData.skills.slice(0, 4);
 
-  const isMobile = useMediaQuery(isMobileQuery);
-  const isDesktop = useMediaQuery(isDesktopQuery);
+  const isMobile = useMediaQuery(MOBILE_QUERY);
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
 
   const typedHeadline = useTypewriter(HEADLINE, TYPE_SPEED);
   const isTyping = typedHeadline.length < HEADLINE.length;
+
+  // 패럴렉스(배경 블롭)와 스크롤 기반 변형(기하학적 도형 회전/스케일)용 레이어 —
+  // 서로 다른 speed를 줘서 스크롤할 때 층마다 다르게 움직이는 다층 효과를 만든다.
+  const blobRefA = useScrollLinked({ speed: 0.15 });
+  const blobRefB = useScrollLinked({ speed: -0.2 });
+  const shapeRefSquare = useScrollLinked({ speed: 0.1 });
+  const shapeRefCircle = useScrollLinked({ speed: -0.12 });
 
   const scrollToProjects = () => {
     document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
@@ -85,46 +93,51 @@ export default function HeroSection() {
         pointerEvents: 'none',
       }} />
 
-      {/* 장식 블롭 */}
-      <Box className="decorative-blob" sx={{
+      {/* 장식 블롭 — 패럴렉스: 스크롤 속도가 서로 달라 배경이 전경과 분리되어 보인다 */}
+      <Box ref={blobRefA} className="decorative-blob" sx={{
         position: 'absolute', top: -80, right: -80,
         width: 320, height: 320, borderRadius: '50%',
         backgroundColor: 'var(--color-accent-purple)', opacity: 0.45,
+        transform: 'translate3d(0, calc(var(--parallax-offset, 0) * 1px), 0)',
+        willChange: 'transform',
       }} />
-      <Box className="decorative-blob" sx={{
+      <Box ref={blobRefB} className="decorative-blob" sx={{
         position: 'absolute', bottom: -60, left: -60,
         width: 240, height: 240, borderRadius: '50%',
         backgroundColor: 'var(--color-accent-olive)', opacity: 0.45,
+        transform: 'translate3d(0, calc(var(--parallax-offset, 0) * 1px), 0)',
+        willChange: 'transform',
       }} />
 
-      {/* 기하학적 도형 (데스크톱 1200px+ 전용) */}
+      {/* 기하학적 도형 (데스크톱 1200px+ 전용) — 스크롤 위치에 따라 회전/스케일이 계속 바뀐다 */}
       {isDesktop && (
         <>
-          <Box sx={{
+          <Box ref={shapeRefSquare} sx={{
             position: 'absolute', top: '16%', left: '6%',
             width: 130, height: 130,
             border: '2px dashed rgba(255,255,255,0.3)',
             borderRadius: '28px',
-            transform: 'rotate(18deg)',
+            transform: 'translate3d(0, calc(var(--parallax-offset, 0) * 1px), 0) rotate(calc(18deg + var(--reveal-progress, 0) * 50deg))',
+            willChange: 'transform',
             pointerEvents: 'none',
           }} />
-          <Box sx={{
+          <Box ref={shapeRefCircle} sx={{
             position: 'absolute', bottom: '18%', right: '8%',
             width: 90, height: 90,
             border: '2px solid rgba(255,255,255,0.25)',
             borderRadius: '50%',
+            transform: 'translate3d(0, calc(var(--parallax-offset, 0) * 1px), 0) scale3d(calc(0.7 + var(--reveal-progress, 0) * 0.5), calc(0.7 + var(--reveal-progress, 0) * 0.5), 1)',
+            willChange: 'transform',
             pointerEvents: 'none',
           }} />
         </>
       )}
 
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-        <Grid container spacing={{ xs: 6, sm: 5, md: 4 }} alignItems="center">
+        <Grid container spacing={{ xs: 6, sm: 5, md: 4 }} sx={{ alignItems: 'center' }}>
           {/* 텍스트 영역 */}
           <Grid
-            item
-            xs={12}
-            md={7}
+            size={{ xs: 12, md: 7 }}
             sx={{
               textAlign: isMobile ? 'center' : 'left',
               '@media (min-width:768px)': { flexBasis: '58.333%', maxWidth: '58.333%' },
@@ -145,9 +158,25 @@ export default function HeroSection() {
               {name} · {experience}
             </Box>
 
+            {/* 역할 타이핑/모핑 */}
+            <Box sx={{
+              display: 'flex',
+              justifyContent: isMobile ? 'center' : 'flex-start',
+              alignItems: 'baseline',
+              gap: 1,
+              mb: 1,
+              fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
+              fontWeight: 700,
+            }}>
+              <Box component="span" sx={{ color: 'rgba(255,255,255,0.85)' }}>저는</Box>
+              <RoleTypewriter words={ROLE_WORDS} sx={{ fontWeight: 800 }} />
+              <Box component="span" sx={{ color: 'rgba(255,255,255,0.85)' }}>입니다</Box>
+            </Box>
+
             <Typography
               variant={isMobile ? 'h2' : 'h1'}
               sx={{
+                position: 'relative',
                 color: '#FFFFFF',
                 mb: 3,
                 fontFamily: "'Black Han Sans', 'Noto Sans KR', sans-serif",
@@ -156,28 +185,34 @@ export default function HeroSection() {
                 lineHeight: { xs: 1.4, md: 1.3 },
                 whiteSpace: 'pre-line',
                 textShadow: '0 4px 20px rgba(0,0,0,0.25)',
-                minHeight: { xs: '4.8rem', sm: '6rem', md: '5rem' },
               }}
             >
-              {typedHeadline}
-              <Box
-                component="span"
-                aria-hidden="true"
-                sx={{
-                  display: 'inline-block',
-                  width: '3px',
-                  ml: '2px',
-                  height: '0.9em',
-                  verticalAlign: '-0.1em',
-                  backgroundColor: '#FFFFFF',
-                  opacity: isTyping ? 1 : 0,
-                  animation: isTyping ? 'blink 0.8s step-end infinite' : 'none',
-                  '@keyframes blink': {
-                    '0%, 100%': { opacity: 1 },
-                    '50%': { opacity: 0 },
-                  },
-                }}
-              />
+              {/* 레이아웃 높이만 예약하는 투명 텍스트 — 최종 문구와 동일해서
+                  타이핑 도중 줄바꿈이 생겨도 아래 요소가 밀리지 않는다 */}
+              <Box component="span" aria-hidden="true" sx={{ visibility: 'hidden' }}>
+                {HEADLINE}
+              </Box>
+              <Box component="span" sx={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+                {typedHeadline}
+                <Box
+                  component="span"
+                  aria-hidden="true"
+                  sx={{
+                    display: 'inline-block',
+                    width: '3px',
+                    ml: '2px',
+                    height: '0.9em',
+                    verticalAlign: '-0.1em',
+                    backgroundColor: '#FFFFFF',
+                    opacity: isTyping ? 1 : 0,
+                    animation: isTyping ? 'blink 0.8s step-end infinite' : 'none',
+                    '@keyframes blink': {
+                      '0%, 100%': { opacity: 1 },
+                      '50%': { opacity: 0 },
+                    },
+                  }}
+                />
+              </Box>
             </Typography>
 
             <Fade in timeout={600} style={{ transitionDelay: '1500ms' }}>
@@ -216,21 +251,35 @@ export default function HeroSection() {
                     size="large"
                     fullWidth={isMobile}
                     sx={{
-                      backgroundColor: 'var(--color-secondary)',
+                      ...gradientSweepBg('var(--color-secondary)', 'var(--color-secondary-light)'),
                       color: 'var(--color-text-on-color)',
                       fontWeight: 700,
                       minHeight: 44,
                       boxShadow: '0 0 0 rgba(242,192,56,0.6)',
                       animation: 'ctaPulse 2.5s ease-in-out infinite',
-                      transition: 'all 0.25s ease',
+                      willChange: 'transform, box-shadow, background-position',
+                      transition: 'transform 0.25s ease, box-shadow 0.25s ease, background-position 0.5s ease',
                       '@keyframes ctaPulse': {
                         '0%, 100%': { boxShadow: '0 0 0 0 rgba(242,192,56,0.5)' },
                         '50%': { boxShadow: '0 0 0 10px rgba(242,192,56,0)' },
                       },
-                      '&:hover': {
-                        backgroundColor: 'var(--color-secondary-light)',
-                        transform: 'translateY(-2px) scale(1.04)',
+                      [HOVER_CAPABLE]: {
+                        '&:hover': {
+                          backgroundPosition: '100% 0%',
+                          transform: 'perspective(1600px) rotateX(2deg) translateY(-2px)',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                          animation: 'none',
+                        },
+                      },
+                      '&:focus-visible': {
+                        backgroundPosition: '100% 0%',
+                        transform: 'perspective(1600px) rotateX(2deg) translateY(-2px)',
                         boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                        animation: 'none',
+                      },
+                      '&:active': {
+                        transform: 'translateY(0) scale(0.98)',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
                         animation: 'none',
                       },
                     }}
@@ -249,13 +298,27 @@ export default function HeroSection() {
                       color: '#FFFFFF',
                       borderWidth: '2px',
                       minHeight: 44,
-                      transition: 'all 0.25s ease',
-                      '&:hover': {
+                      willChange: 'transform',
+                      transition: 'transform 0.25s ease, border-color 0.25s ease, color 0.25s ease, background-color 0.25s ease',
+                      [HOVER_CAPABLE]: {
+                        '&:hover': {
+                          borderColor: 'var(--color-secondary)',
+                          color: 'var(--color-secondary)',
+                          borderWidth: '2px',
+                          backgroundColor: 'rgba(255,255,255,0.08)',
+                          transform: 'perspective(1600px) rotateX(2deg) translateY(-2px)',
+                        },
+                      },
+                      '&:focus-visible': {
                         borderColor: 'var(--color-secondary)',
                         color: 'var(--color-secondary)',
                         borderWidth: '2px',
                         backgroundColor: 'rgba(255,255,255,0.08)',
-                        transform: 'translateY(-2px)',
+                        transform: 'perspective(1600px) rotateX(2deg) translateY(-2px)',
+                      },
+                      '&:active': {
+                        transform: 'translateY(0) scale(0.98)',
+                        backgroundColor: 'rgba(255,255,255,0.14)',
                       },
                     }}
                   >
@@ -305,9 +368,7 @@ export default function HeroSection() {
 
           {/* 비주얼 영역: 프로필 + 떠다니는 스킬 아이콘 */}
           <Grid
-            item
-            xs={12}
-            md={5}
+            size={{ xs: 12, md: 5 }}
             sx={{
               display: 'flex',
               justifyContent: 'center',
@@ -355,27 +416,33 @@ export default function HeroSection() {
                   const Icon = SKILL_ICONS[skill.icon] ?? DEFAULT_SKILL_ICON;
                   const position = ORBIT_POSITIONS[index] ?? ORBIT_POSITIONS[0];
                   return (
-                    <Box
-                      key={skill.id}
-                      title={skill.name}
-                      sx={{
-                        position: 'absolute',
-                        ...position,
-                        width: { xs: 44, md: 54 },
-                        height: { xs: 44, md: 54 },
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--color-bg-primary)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
-                        animation: `float 3.5s ease-in-out ${index * 0.4}s infinite`,
-                        '@keyframes float': {
-                          '0%, 100%': { transform: 'translateY(0)' },
-                          '50%': { transform: 'translateY(-10px)' },
-                        },
-                      }}
-                    >
-                      <Icon sx={{ fontSize: { xs: 20, md: 26 }, color: 'var(--color-primary)' }} />
-                    </Box>
+                    <Tooltip key={skill.id} title={skill.name} placement="top">
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          ...position,
+                          width: { xs: 44, md: 54 },
+                          height: { xs: 44, md: 54 },
+                          borderRadius: '50%',
+                          backgroundColor: 'var(--color-bg-primary)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
+                          animation: `float 3.5s ease-in-out ${index * 0.4}s infinite`,
+                          '@keyframes float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                          },
+                        }}
+                      >
+                        <Icon
+                          sx={{
+                            fontSize: { xs: 20, md: 26 },
+                            color: 'var(--color-primary)',
+                            ...iconGlowSx('var(--color-primary)'),
+                          }}
+                        />
+                      </Box>
+                    </Tooltip>
                   );
                 })}
               </Box>

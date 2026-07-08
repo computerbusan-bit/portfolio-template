@@ -71,23 +71,6 @@ export const skillsData = [
   },
 ];
 
-export const availableSkills = [
-  {
-    id: 9,
-    icon: 'Dns',
-    name: 'Node.js',
-    category: '프로그래밍',
-    description: '서버 사이드 자바스크립트 런타임이에요.',
-  },
-  {
-    id: 10,
-    icon: 'Terminal',
-    name: 'Python',
-    category: '프로그래밍',
-    description: '스크립팅과 자동화 작업에 사용해요.',
-  },
-];
-
 export function sortByLevelDesc(skills) {
   return [...skills].sort((a, b) => b.level - a.level);
 }

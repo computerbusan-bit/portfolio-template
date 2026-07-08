@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Box, Typography, Container, TextField, Button,
-  IconButton, CircularProgress, Snackbar, Alert, Tooltip,
+  IconButton, Skeleton, Snackbar, Alert, Tooltip,
   Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
@@ -11,21 +11,41 @@ import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import { supabase } from '../lib/supabase';
 import { socialLinks } from '../data/socialLinks';
 import { SOCIAL_ICONS } from '../utils/socialIcons';
+import { HOVER_CAPABLE, gradientSweepBg } from '../utils/hoverEffects';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ScrollReveal from '../components/ScrollReveal';
+
+// 방명록 로딩 중 표시할 스켈레톤 — 실제 항목(이모지+이름+메시지) 모양을 그대로 흉내낸다
+function GuestbookEntrySkeleton() {
+  return (
+    <Box sx={{ display: 'flex', gap: 2, p: { xs: 2, sm: 2.5 }, borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.06)' }}>
+      <Skeleton variant="circular" width={44} height={44} sx={{ bgcolor: 'rgba(255,255,255,0.12)', flexShrink: 0 }} />
+      <Box flex={1}>
+        <Skeleton variant="text" width="35%" height={22} sx={{ bgcolor: 'rgba(255,255,255,0.12)' }} />
+        <Skeleton variant="text" width="90%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+        <Skeleton variant="text" width="60%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+      </Box>
+    </Box>
+  );
+}
 
 const EMOJI_OPTIONS = ['👋', '😊', '🔥', '💪', '✨', '🚀', '🌟', '💡'];
-const ADMIN_PASSWORD = 'hami2026';
 
 const INITIAL_FORM = { name: '', message: '', email: '', organization: '', emoji: '👋' };
 
-// 삭제 비밀번호 다이얼로그
+// 삭제 비밀번호 다이얼로그 — 비밀번호 검증은 서버(Supabase RPC)에서만 이뤄짐
 function DeleteDialog({ open, onClose, onConfirm }) {
   const [pw, setPw] = useState('');
   const [error, setError] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleConfirm = () => {
-    if (pw === ADMIN_PASSWORD) {
+  const handleConfirm = async () => {
+    if (!pw || submitting) return;
+    setSubmitting(true);
+    const success = await onConfirm(pw);
+    setSubmitting(false);
+    if (success) {
       setPw(''); setError(false);
-      onConfirm();
     } else {
       setError(true);
     }
@@ -55,19 +75,20 @@ function DeleteDialog({ open, onClose, onConfirm }) {
           fullWidth
           size="small"
           autoFocus
+          disabled={submitting}
           error={error}
           helperText={error ? '비밀번호가 올바르지 않습니다.' : ''}
         />
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={handleClose} sx={{ color: 'text.secondary' }}>취소</Button>
+        <Button onClick={handleClose} sx={{ color: 'text.secondary' }} disabled={submitting}>취소</Button>
         <Button
           onClick={handleConfirm}
           variant="contained"
           color="error"
-          disabled={!pw}
+          disabled={!pw || submitting}
         >
-          삭제
+          {submitting ? '확인 중...' : '삭제'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -156,7 +177,11 @@ function GuestbookEntry({ entry, onDelete }) {
       <DeleteDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        onConfirm={() => { setDialogOpen(false); onDelete(entry.id); }}
+        onConfirm={async (password) => {
+          const success = await onDelete(entry.id, password);
+          if (success) setDialogOpen(false);
+          return success;
+        }}
       />
     </>
   );
@@ -169,8 +194,6 @@ export default function ContactSection() {
   const [submitting, setSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  useEffect(() => { fetchEntries(); }, []);
-
   const fetchEntries = async () => {
     setLoading(true);
     const { data } = await supabase
@@ -182,14 +205,28 @@ export default function ContactSection() {
     setLoading(false);
   };
 
-  const handleDelete = async (id) => {
-    const { error } = await supabase.from('guestbook').delete().eq('id', id);
+  useEffect(() => {
+    const load = async () => { await fetchEntries(); };
+    load();
+  }, []);
+
+  // 비밀번호 검증은 Supabase 함수(delete_guestbook_entry)가 서버에서 수행 — 클라이언트는 결과만 받음
+  const handleDelete = async (id, password) => {
+    const { data, error } = await supabase.rpc('delete_guestbook_entry', {
+      entry_id: id,
+      input_password: password,
+    });
     if (error) {
       setSnackbar({ open: true, message: '삭제에 실패했습니다.', severity: 'error' });
-    } else {
-      setSnackbar({ open: true, message: '방명록이 삭제됐습니다.', severity: 'info' });
-      setEntries(prev => prev.filter(e => e.id !== id));
+      return false;
     }
+    if (!data) {
+      // 비밀번호 불일치 — 다이얼로그에서 자체적으로 에러 표시
+      return false;
+    }
+    setSnackbar({ open: true, message: '방명록이 삭제됐습니다.', severity: 'info' });
+    setEntries(prev => prev.filter(e => e.id !== id));
+    return true;
   };
 
   const handleChange = (e) => {
@@ -226,25 +263,27 @@ export default function ContactSection() {
       <Container maxWidth="md">
 
         {/* 섹션 헤더 */}
-        <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
-          <Box sx={{
-            display: 'inline-block', px: 2, py: 0.5, mb: 2,
-            bgcolor: 'rgba(242,192,56,0.25)', borderRadius: '20px',
-            fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em',
-            color: '#F2C038', border: '1px solid rgba(242,192,56,0.4)',
-          }}>
-            GET IN TOUCH
+        <ScrollReveal>
+          <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
+            <Box sx={{
+              display: 'inline-block', px: 2, py: 0.5, mb: 2,
+              bgcolor: 'rgba(242,192,56,0.25)', borderRadius: '20px',
+              fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em',
+              color: '#F2C038', border: '1px solid rgba(242,192,56,0.4)',
+            }}>
+              GET IN TOUCH
+            </Box>
+            <Typography variant="h2" sx={{
+              color: '#fff', fontWeight: 800,
+              fontSize: { xs: '1.9rem', md: '2.5rem' }, lineHeight: 1.2, mb: 1.5,
+            }}>
+              안녕하세요, 반가워요! 👋
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: { xs: '0.95rem', sm: '1.05rem' } }}>
+              언제든지 연락주세요. 방명록에 흔적을 남겨주셔도 좋아요.
+            </Typography>
           </Box>
-          <Typography variant="h2" sx={{
-            color: '#fff', fontWeight: 800,
-            fontSize: { xs: '1.9rem', md: '2.5rem' }, lineHeight: 1.2, mb: 1.5,
-          }}>
-            안녕하세요, 반가워요! 👋
-          </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: { xs: '0.95rem', sm: '1.05rem' } }}>
-            언제든지 연락주세요. 방명록에 흔적을 남겨주셔도 좋아요.
-          </Typography>
-        </Box>
+        </ScrollReveal>
 
         {/* ── 연락처 카드 영역 ── */}
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3, mb: { xs: 6, md: 8 } }}>
@@ -339,9 +378,11 @@ export default function ContactSection() {
             }}
           >
             {loading ? (
-              <Box display="flex" justifyContent="center" py={4}>
-                <CircularProgress sx={{ color: '#F2C038' }} size={32} />
-              </Box>
+              <>
+                <GuestbookEntrySkeleton />
+                <GuestbookEntrySkeleton />
+                <GuestbookEntrySkeleton />
+              </>
             ) : entries.length === 0 ? (
               <Box sx={{
                 textAlign: 'center', py: 6, borderRadius: '16px',
@@ -413,19 +454,26 @@ export default function ContactSection() {
               name="message" label="메시지 *" value={form.message}
               onChange={handleChange} required fullWidth multiline rows={3} sx={{ mb: 3 }}
               placeholder="안녕하세요! 방문 기념으로 한 마디 남겨주세요 😊"
-              inputProps={{ maxLength: 500 }}
+              slotProps={{ htmlInput: { maxLength: 500 } }}
               helperText={`${form.message.length} / 500`}
             />
 
             <Button
               type="submit" variant="contained" fullWidth
               disabled={!form.name.trim() || !form.message.trim() || submitting}
-              endIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SendRoundedIcon />}
+              endIcon={submitting ? <LoadingSpinner size={16} thickness={2} color="#fff" trackColor="rgba(255,255,255,0.3)" /> : <SendRoundedIcon />}
               sx={{
                 py: 1.5, fontWeight: 700, fontSize: '0.95rem',
-                bgcolor: 'var(--color-bg-terracotta)', color: '#fff',
-                '&:hover': { bgcolor: '#A83B2F' },
-                '&:disabled': { bgcolor: 'rgba(192,69,56,0.3)', color: 'rgba(255,255,255,0.5)' },
+                ...gradientSweepBg('var(--color-bg-terracotta)', '#A83B2F'),
+                color: '#fff',
+                willChange: 'transform, background-position',
+                transition: 'transform 0.2s ease, background-position 0.5s ease',
+                [HOVER_CAPABLE]: {
+                  '&:hover': { backgroundPosition: '100% 0%' },
+                },
+                '&:focus-visible': { backgroundPosition: '100% 0%' },
+                '&:active': { backgroundPosition: '100% 0%', transform: 'scale(0.98)' },
+                '&:disabled': { backgroundImage: 'none', bgcolor: 'rgba(192,69,56,0.3)', color: 'rgba(255,255,255,0.5)' },
               }}
             >
               {submitting ? '등록 중...' : '방명록 남기기'}

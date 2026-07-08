@@ -33,3 +33,25 @@ a:hover {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+/* 다크모드 전환 시 색상이 즉시 바뀌지 않고 부드럽게 이어지도록 한다.
+   transform/opacity 등 다른 애니메이션과는 겹치지 않게 색상 관련 속성만 지정했다.
+   모션 감소를 선호하면 즉시 전환되게 끈다. */
+@media (prefers-reduced-motion: no-preference) {
+  * , *::before, *::after {
+    transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease,
+      fill 0.35s ease, stroke 0.35s ease;
+  }
+}
+
+/* 커스텀 커서 활성화 시 네이티브 커서를 숨긴다. CustomCursor 컴포넌트가 마운트에
+   성공했을 때만 body에 이 클래스를 붙이므로(마운트 실패 시 클래스도 안 붙음),
+   커서가 완전히 사라지는 상태는 생기지 않는다. 마우스 포인터가 있을 때만
+   적용해서 터치 기기에는 영향이 없다 — MUI 버튼 등이 개별적으로 지정하는
+   cursor:pointer보다 우선해야 해서 와일드카드 + !important가 필요하다. */
+@media (hover: hover) and (pointer: fine) {
+  body.custom-cursor-active,
+  body.custom-cursor-active * {
+    cursor: none !important;
+  }
+}

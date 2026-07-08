@@ -3,6 +3,7 @@ import { Box, Typography, Container, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ProjectCard, ProjectCardSkeleton } from '../components/ProjectCard';
+import ScrollReveal from '../components/ScrollReveal';
 
 export default function ProjectsSection() {
   const [projects, setProjects] = useState([]);
@@ -30,33 +31,35 @@ export default function ProjectsSection() {
     >
       <Container maxWidth="lg">
         {/* 섹션 헤더 */}
-        <Box sx={{ textAlign: 'center', mb: 7 }}>
-          <Box sx={{
-            display: 'inline-block',
-            px: 2, py: 0.5, mb: 2,
-            backgroundColor: 'var(--color-accent-teal)',
-            borderRadius: '20px',
-            fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em',
-            color: '#FFFFFF',
-          }}>
-            PROJECTS
+        <ScrollReveal>
+          <Box sx={{ textAlign: 'center', mb: 7 }}>
+            <Box sx={{
+              display: 'inline-block',
+              px: 2, py: 0.5, mb: 2,
+              backgroundColor: 'var(--color-accent-teal)',
+              borderRadius: '20px',
+              fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em',
+              color: '#FFFFFF',
+            }}>
+              PROJECTS
+            </Box>
+            <Typography variant="h2" sx={{
+              color: 'var(--color-text-primary)',
+              fontWeight: 800,
+              fontSize: { xs: '1.8rem', md: '2.25rem' },
+              borderBottom: '3px solid var(--color-secondary)',
+              display: 'inline-block', pb: 0.5,
+              lineHeight: 1.3,
+            }}>
+              대표 프로젝트
+            </Typography>
+            <Typography variant="body1" sx={{
+              color: 'var(--color-text-muted)', mt: 2,
+            }}>
+              직접 설계하고 구현한 프로젝트들을 소개합니다.
+            </Typography>
           </Box>
-          <Typography variant="h2" sx={{
-            color: 'var(--color-text-primary)',
-            fontWeight: 800,
-            fontSize: { xs: '1.8rem', md: '2.25rem' },
-            borderBottom: '3px solid var(--color-secondary)',
-            display: 'inline-block', pb: 0.5,
-            lineHeight: 1.3,
-          }}>
-            대표 프로젝트
-          </Typography>
-          <Typography variant="body1" sx={{
-            color: 'var(--color-text-muted)', mt: 2,
-          }}>
-            직접 설계하고 구현한 프로젝트들을 소개합니다.
-          </Typography>
-        </Box>
+        </ScrollReveal>
 
         {/* 카드 그리드 — 데스크톱 3열 / 태블릿 2열 / 모바일 1열 (CSS Grid: 각 열이 항상 균등한 폭을 보장) */}
         <Box
@@ -79,8 +82,10 @@ export default function ProjectsSection() {
               <Typography variant="body1">프로젝트를 준비 중입니다.</Typography>
             </Box>
           ) : (
-            projects.map(project => (
-              <ProjectCard key={project.id} project={project} />
+            projects.map((project, index) => (
+              <ScrollReveal key={project.id} delay={index * 120} threshold={0.1}>
+                <ProjectCard project={project} />
+              </ScrollReveal>
             ))
           )}
         </Box>

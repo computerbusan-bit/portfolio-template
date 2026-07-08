@@ -4,11 +4,34 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="포트폴리오 웹사이트 — Wild Souls 컬러 테마 적용" />
+    <script>
+      // React가 마운트되기 전, 첫 페인트보다 먼저 테마를 결정해서 html에 붙인다.
+      // 여기서 안 하면 항상 라이트로 그렸다가 다크로 바뀌는 깜빡임이 생긴다.
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var theme = saved === 'light' || saved === 'dark'
+            ? saved
+            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <meta name="description" content="웹학과 강사 김하미의 포트폴리오 — React와 Supabase로 만든 프로젝트와 개발 스토리를 소개합니다." />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:title" content="김하미 포트폴리오" />
+    <meta property="og:description" content="웹학과 강사 김하미의 포트폴리오 — React와 Supabase로 만든 프로젝트와 개발 스토리를 소개합니다." />
+    <meta property="og:url" content="https://computerbusan-bit.github.io/portfolio-template/" />
+    <meta property="og:image" content="https://computerbusan-bit.github.io/portfolio-template/thumbnails/busan.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&family=Roboto:wght@400;500;700&family=Black+Han+Sans&display=swap" rel="stylesheet" />
-    <title>My Portfolio</title>
+    <title>김하미 포트폴리오</title>
   </head>
   <body>
     <div id="root"></div>

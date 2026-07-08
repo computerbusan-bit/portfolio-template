@@ -2,6 +2,11 @@
    컬러 팔레트 디자인 시스템 — Wild Souls 기반
    출처: 컬러 팔레트 디자인 시스템.md
    디자인 컨셉: 따뜻한 보헤미안 자연주의
+
+   대부분의 컴포넌트는 이 CSS 변수를 직접 참조하며(다크모드/고대비 등
+   런타임 전환을 여기서 전담), src/theme/theme.js는 MUI 내부 색상 연산
+   (리플, 호버 오버레이)에 필요한 리터럴 hex 값만 src/theme/colors.js를
+   통해 별도로 갖는다. 라이트 모드 색상값을 바꿀 땐 두 파일을 함께 맞출 것.
    ============================================ */
 
 :root {
@@ -64,21 +69,23 @@
   --spacing-3xl: 96px;
 }
 
-/* 다크모드 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg-primary:    #1C1410;
-    --color-bg-secondary:  #2A1E14;
-    --color-primary:       #EA8255;
-    --color-primary-light: #F0A070;
-    --color-primary-dark:  #E05C2A;
-    --color-secondary:     #C99A1E;
-    --color-text-primary:  #F5F0EA;
-    --color-text-secondary: #D4C8BC;
-    --color-text-muted:    #8A8078;
-    --color-border-light:  #3A3028;
-    --color-border-strong: #F5F0EA;
-  }
+/* 다크모드 — ThemeModeProvider(src/context/ThemeModeContext.jsx)가 html에
+   data-theme="dark"|"light"를 붙여서 전환한다. 최초 값은 localStorage에 저장된
+   사용자 선택이 있으면 그 값, 없으면 prefers-color-scheme(OS 설정)을 따른다
+   (해당 로직은 JS에서 처리 — 순수 CSS 미디어쿼리만으로는 "수동 선택이 OS 설정을
+   이긴다"는 우선순위를 표현할 수 없다). */
+:root[data-theme='dark'] {
+  --color-bg-primary:    #1C1410;
+  --color-bg-secondary:  #2A1E14;
+  --color-primary:       #EA8255;
+  --color-primary-light: #F0A070;
+  --color-primary-dark:  #E05C2A;
+  --color-secondary:     #C99A1E;
+  --color-text-primary:  #F5F0EA;
+  --color-text-secondary: #D4C8BC;
+  --color-text-muted:    #8A8078;
+  --color-border-light:  #3A3028;
+  --color-border-strong: #F5F0EA;
 }
 
 /* 모바일 */

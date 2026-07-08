@@ -10,9 +10,9 @@ function AboutMeBasicInfoCard({ basicInfo }) {
       borderRadius: '16px',
     }}>
       <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-        <Grid container spacing={3} alignItems="center">
+        <Grid container spacing={3} sx={{ alignItems: 'center' }}>
           {/* 캐릭터 프로필 */}
-          <Grid item xs={12} sm="auto" sx={{ textAlign: 'center' }}>
+          <Grid size={{ xs: 12, sm: 'auto' }} sx={{ textAlign: 'center' }}>
             <Box
               role="img"
               aria-label={`${basicInfo.name} 프로필 캐릭터`}
@@ -32,7 +32,7 @@ function AboutMeBasicInfoCard({ basicInfo }) {
           </Grid>
 
           {/* 기본 정보 텍스트 */}
-          <Grid item xs={12} sm>
+          <Grid size={{ xs: 12, sm: 'grow' }}>
             <Typography variant="h3" sx={{
               color: 'var(--color-text-primary)',
               fontWeight: 800,

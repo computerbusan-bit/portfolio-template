@@ -6,17 +6,8 @@ import {
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import FolderOpenRoundedIcon from '@mui/icons-material/FolderOpenRounded';
-
-// id → 포트폴리오 public 폴더의 실제 스크린샷
-const STATIC_THUMBNAILS = {
-  1: `${import.meta.env.BASE_URL}thumbnails/crossfit.png`,
-  2: `${import.meta.env.BASE_URL}thumbnails/busan.png`,
-};
-
-// id → 올바른 Live Demo URL (DB 값이 잘못됐을 경우 대비)
-const LIVE_DEMO_URLS = {
-  2: 'https://computerbusan-bit.github.io/hami-first-website/',
-};
+import { STATIC_THUMBNAILS, LIVE_DEMO_URLS } from '../data/projectOverrides';
+import { HOVER_CAPABLE, gradientSweepBg } from '../utils/hoverEffects';
 
 export function ProjectCard({ project }) {
   const [imgError, setImgError] = useState(false);
@@ -33,13 +24,23 @@ export function ProjectCard({ project }) {
       border: '1px solid var(--color-border-light)',
       borderRadius: '14px',
       overflow: 'hidden',
+      willChange: 'transform, box-shadow',
       transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-      '&:hover': {
-        transform: 'translateY(-6px)',
+      [HOVER_CAPABLE]: {
+        '&:hover': {
+          transform: 'perspective(2200px) rotateX(1.5deg) translateY(-6px)',
+          boxShadow: '0 16px 40px rgba(0,0,0,0.14)',
+        },
+      },
+      '&:focus-within': {
+        transform: 'perspective(2200px) rotateX(1.5deg) translateY(-6px)',
         boxShadow: '0 16px 40px rgba(0,0,0,0.14)',
       },
+      '&:active': {
+        transform: 'perspective(1000px) translateY(-2px) scale(0.995)',
+      },
     }}>
-      {/* 썸네일 — 실제 스크린샷 비율(1280x800 = 8:5)에 맞춤 */}
+      {/* 썸네일 — 실제 스크린샷 비율(1280x800 = 8:5)에 맞춤. 호버/탭 시 확대 + 필터 + 정보 오버레이 */}
       <Box sx={{
         width: '100%',
         position: 'relative',
@@ -47,23 +48,54 @@ export function ProjectCard({ project }) {
         overflow: 'hidden',
         bgcolor: 'var(--color-bg-secondary)',
         flexShrink: 0,
+        [HOVER_CAPABLE]: {
+          '&:hover .pc-thumb-img': { transform: 'scale(1.08)', filter: 'brightness(0.92) saturate(1.15)' },
+          '&:hover .pc-thumb-overlay': { opacity: 1, transform: 'translateY(0)' },
+        },
+        '&:active .pc-thumb-img': { transform: 'scale(1.08)', filter: 'brightness(0.92) saturate(1.15)' },
+        '&:active .pc-thumb-overlay': { opacity: 1, transform: 'translateY(0)' },
       }}>
         {!imgError ? (
-          <CardMedia
-            component="img"
-            image={thumbnailUrl}
-            alt={project.title}
-            loading="lazy"
-            onError={() => setImgError(true)}
-            sx={{
-              position: 'absolute',
-              top: 0, left: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover',
-              transition: 'transform 0.3s ease',
-              '&:hover': { transform: 'scale(1.04)' },
-            }}
-          />
+          <>
+            <CardMedia
+              component="img"
+              className="pc-thumb-img"
+              image={thumbnailUrl}
+              alt={project.title}
+              loading="lazy"
+              onError={() => setImgError(true)}
+              sx={{
+                position: 'absolute',
+                top: 0, left: 0,
+                width: '100%', height: '100%',
+                objectFit: 'cover',
+                willChange: 'transform, filter',
+                transition: 'transform 0.4s ease, filter 0.4s ease',
+              }}
+            />
+            {/* 정보 오버레이 — 평소엔 숨어있다가 호버/탭 시 아래에서 올라오며 나타남 */}
+            <Box
+              className="pc-thumb-overlay"
+              aria-hidden="true"
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'flex-end',
+                background: 'linear-gradient(to top, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0) 60%)',
+                opacity: 0,
+                transform: 'translateY(6px)',
+                willChange: 'opacity, transform',
+                transition: 'opacity 0.3s ease, transform 0.3s ease',
+                p: 2,
+                pointerEvents: 'none',
+              }}
+            >
+              <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}>
+                자세히 보기 →
+              </Typography>
+            </Box>
+          </>
         ) : (
           <Box sx={{
             position: 'absolute', top: 0, left: 0,
@@ -163,14 +195,25 @@ export function ProjectCard({ project }) {
                 fontSize: '0.78rem',
                 py: 0.8,
                 whiteSpace: 'nowrap',
-                bgcolor: 'var(--color-primary)',
+                ...gradientSweepBg('var(--color-primary)', 'var(--color-primary-dark)'),
                 color: '#fff',
                 boxShadow: 'none',
-                '&:hover': {
-                  bgcolor: 'var(--color-primary-dark)',
+                willChange: 'transform, box-shadow, background-position',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease, background-position 0.5s ease',
+                [HOVER_CAPABLE]: {
+                  '&:hover': {
+                    backgroundPosition: '100% 0%',
+                    boxShadow: '0 4px 12px rgba(224,92,42,0.35)',
+                  },
+                },
+                '&:focus-visible': {
+                  backgroundPosition: '100% 0%',
                   boxShadow: '0 4px 12px rgba(224,92,42,0.35)',
                 },
-                transition: 'all 0.2s ease',
+                '&:active': {
+                  backgroundPosition: '100% 0%',
+                  transform: 'scale(0.97)',
+                },
               }}
             >
               Live Demo
@@ -193,13 +236,27 @@ export function ProjectCard({ project }) {
                 borderColor: 'var(--color-border-strong)',
                 color: 'var(--color-text-primary)',
                 borderWidth: '1.5px',
-                '&:hover': {
+                willChange: 'transform, background-color, color',
+                transition: 'transform 0.2s ease, background-color 0.2s ease, color 0.2s ease',
+                [HOVER_CAPABLE]: {
+                  '&:hover': {
+                    bgcolor: 'var(--color-text-primary)',
+                    color: '#fff',
+                    borderColor: 'var(--color-text-primary)',
+                    boxShadow: 'none',
+                    transform: 'translateY(-2px)',
+                  },
+                },
+                '&:focus-visible': {
                   bgcolor: 'var(--color-text-primary)',
                   color: '#fff',
                   borderColor: 'var(--color-text-primary)',
-                  boxShadow: 'none',
                 },
-                transition: 'all 0.2s ease',
+                '&:active': {
+                  bgcolor: 'var(--color-text-primary)',
+                  color: '#fff',
+                  transform: 'scale(0.97)',
+                },
               }}
             >
               GitHub
